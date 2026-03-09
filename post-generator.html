@@ -502,6 +502,7 @@
   let selectedPlatform = 'blog';
   let selectedTone = 'warm';
   let uploadedImageBase64 = null;
+  let uploadedImageType = 'image/jpeg';
 
   // ── FILE UPLOAD ────────────────────────────────────────
   const fileInput = document.getElementById('fileInput');
@@ -514,6 +515,7 @@
     const reader = new FileReader();
     reader.onload = (ev) => {
       uploadedImageBase64 = ev.target.result.split(',')[1];
+      uploadedImageType = file.type || 'image/jpeg';
       previewImg.src = ev.target.result;
       previewImg.style.display = 'block';
       uploadZone.querySelector('.upload-icon').style.display = 'none';
@@ -695,7 +697,7 @@
         messages.push({
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: uploadedImageBase64 } },
+            { type: 'image', source: { type: 'base64', media_type: uploadedImageType, data: uploadedImageBase64 } },
             { type: 'text', text: prompt }
           ]
         });
