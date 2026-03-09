@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/", "destination": "/post-generator.html" }]
+  "rewrites": [
+    { "source": "/", "destination": "/post-generator.html" },
+    { "source": "/collage", "destination": "/collage-maker.html" }
+  ]
 }
