@@ -195,12 +195,16 @@
     <div class="panel">
       <div class="panel-header"><div class="step-badge">2</div><div class="panel-title">톤 & 스타일 선택</div></div>
       <div class="panel-body">
-        <span class="ctx-label">어디에 올릴까요?</span>
+        <span class="ctx-label">어디에 올릴까요? <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">(여러 개 선택 가능)</span></span>
         <div class="tone-grid">
-          <button class="tone-btn active" data-platform="blog">📝 블로그</button>
-          <button class="tone-btn" data-platform="linkedin">💼 링크드인</button>
-          <button class="tone-btn" data-platform="both">✨ 둘 다</button>
-          <button class="tone-btn" data-platform="instagram">📸 인스타그램</button>
+          <button class="tone-btn active" data-platform="blog" onclick="togglePlatform(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" style="margin-right:6px;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#03C75A"/><path d="M6 6h4l4 6V6h4v12h-4l-4-6v6H6z" fill="white"/></svg>네이버 블로그</button>
+          <button class="tone-btn" data-platform="linkedin" onclick="togglePlatform(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" style="margin-right:6px;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path d="M7 9h2.5v8H7V9zm1.25-1.5a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM11 9h2.4v1.1h.03C13.77 9.5 14.7 9 16 9c2.3 0 2.7 1.5 2.7 3.5V17H16v-4c0-.95-.02-2.17-1.32-2.17-1.33 0-1.53 1.04-1.53 2.1V17H11V9z" fill="white"/></svg>링크드인</button>
+          <button class="tone-btn" data-platform="youtube" onclick="togglePlatform(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" style="margin-right:6px;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="5" fill="#FF0000"/><path d="M19.6 8.2c-.2-.7-.7-1.3-1.4-1.5C16.9 6.4 12 6.4 12 6.4s-4.9 0-6.2.3c-.7.2-1.2.8-1.4 1.5C4.1 9.5 4.1 12 4.1 12s0 2.5.3 3.8c.2.7.7 1.3 1.4 1.5C7.1 17.6 12 17.6 12 17.6s4.9 0 6.2-.3c.7-.2 1.2-.8 1.4-1.5.3-1.3.3-3.8.3-3.8s0-2.5-.3-3.8z" fill="white"/><path d="M10.2 14.6V9.4l4.6 2.6-4.6 2.6z" fill="#FF0000"/></svg>유튜브</button>
+          <button class="tone-btn" data-platform="instagram" onclick="togglePlatform(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" style="margin-right:6px;vertical-align:middle;flex-shrink:0;"><defs><radialGradient id="ig1" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig1)"/><rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="white" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/><circle cx="16.5" cy="7.5" r="1" fill="white"/></svg>인스타그램</button>
         </div>
         <div style="margin-top:18px;">
           <span class="ctx-label">글의 분위기</span>
@@ -223,20 +227,25 @@
       </div>
       <div class="drafts-bar" id="draftsBar" style="display:none;">
         <span class="drafts-label">📁 임시저장</span>
-        <div id="draftChips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-        <button class="save-draft-btn" onclick="saveDraft()">+ 저장</button>
+        <button class="save-draft-btn" onclick="saveDraft()">저장 <span id="draftCount" style="background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.7rem;margin-left:3px;">0</span></button>
+        <button class="save-draft-btn" style="background:transparent;border-color:var(--cream);color:var(--muted);" onclick="toggleDraftList()">목록 펼치기 ▾</button>
+      </div>
+      <div id="draftList" style="display:none;border-bottom:1px solid var(--cream);background:var(--paper);padding:10px 20px;">
+        <div id="draftChips" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
       <div class="out-tab-bar" id="outTabBar" style="display:none;">
-        <div class="out-tab active" data-tab="blog" onclick="switchOutTab('blog')">📝 블로그</div>
-        <div class="out-tab" data-tab="linkedin" onclick="switchOutTab('linkedin')">💼 링크드인</div>
-        <div class="out-tab" data-tab="instagram" onclick="switchOutTab('instagram')">📸 인스타그램</div>
+        <div class="out-tab active" data-tab="blog" onclick="switchOutTab('blog')"><svg width="13" height="13" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#03C75A"/><path d="M6 6h4l4 6V6h4v12h-4l-4-6v6H6z" fill="white"/></svg>네이버 블로그</div>
+        <div class="out-tab" data-tab="linkedin" onclick="switchOutTab('linkedin')"><svg width="13" height="13" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="4" fill="#0A66C2"/><path d="M7 9h2.5v8H7V9zm1.25-1.5a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM11 9h2.4v1.1h.03C13.77 9.5 14.7 9 16 9c2.3 0 2.7 1.5 2.7 3.5V17H16v-4c0-.95-.02-2.17-1.32-2.17-1.33 0-1.53 1.04-1.53 2.1V17H11V9z" fill="white"/></svg>링크드인</div>
+        <div class="out-tab" data-tab="youtube" onclick="switchOutTab('youtube')"><svg width="13" height="13" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;flex-shrink:0;"><rect width="24" height="24" rx="5" fill="#FF0000"/><path d="M19.6 8.2c-.2-.7-.7-1.3-1.4-1.5C16.9 6.4 12 6.4 12 6.4s-4.9 0-6.2.3c-.7.2-1.2.8-1.4 1.5C4.1 9.5 4.1 12 4.1 12s0 2.5.3 3.8c.2.7.7 1.3 1.4 1.5C7.1 17.6 12 17.6 12 17.6s4.9 0 6.2-.3c.7-.2 1.2-.8 1.4-1.5.3-1.3.3-3.8.3-3.8s0-2.5-.3-3.8z" fill="white"/><path d="M10.2 14.6V9.4l4.6 2.6-4.6 2.6z" fill="#FF0000"/></svg>유튜브</div>
+        <div class="out-tab" data-tab="instagram" onclick="switchOutTab('instagram')"><svg width="13" height="13" viewBox="0 0 24 24" style="margin-right:5px;vertical-align:middle;flex-shrink:0;"><defs><radialGradient id="ig2" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig2)"/><rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="white" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/><circle cx="16.5" cy="7.5" r="1" fill="white"/></svg>인스타그램</div>
       </div>
       <div class="loading" id="loading"><div class="spinner"></div>AI가 글을 쓰고 있어요... ✍️</div>
       <div id="outputArea">
         <div class="out-tab-content active" id="tab-blog">
-          <div class="placeholder-text">① 사진이나 메모를 올리고<br>② 스타일을 골라서<br>③ 버튼을 눌러보세요 🪄</div>
+          <div class="placeholder-text">① 사진이나 메모를 올리고<br>② 플랫폼을 골라서<br>③ 버튼을 눌러보세요 🪄</div>
         </div>
         <div class="out-tab-content" id="tab-linkedin"></div>
+        <div class="out-tab-content" id="tab-youtube"></div>
         <div class="out-tab-content" id="tab-instagram"></div>
       </div>
     </div>
@@ -362,15 +371,15 @@ function switchPage(page, btn) {
 }
 
 // ── POSTSNAP ─────────────────────────────
-let psPlatform = 'blog', psTone = 'warm';
+let psSelectedPlatforms = ['blog'], psTone = 'warm';
 let psImage = null, psImageType = 'image/jpeg';
-let psOutput = { blog:'', linkedin:'', instagram:'' };
+let psOutput = { blog:'', linkedin:'', youtube:'', instagram:'' };
 
 function saveState() {
   try {
     localStorage.setItem('ps_state', JSON.stringify({
       ctx: document.getElementById('contextInput').value,
-      platform: psPlatform, tone: psTone,
+      platforms: psSelectedPlatforms, tone: psTone,
       img: psImage, imgType: psImageType, out: psOutput
     }));
     const b = document.getElementById('saveBadge');
@@ -385,7 +394,10 @@ function loadState() {
     const s = JSON.parse(localStorage.getItem('ps_state') || 'null');
     if (!s) return;
     if (s.ctx) { document.getElementById('contextInput').value = s.ctx; document.getElementById('charCount').textContent = s.ctx.length; }
-    if (s.platform) { psPlatform = s.platform; document.querySelectorAll('[data-platform]').forEach(b => b.classList.toggle('active', b.dataset.platform === s.platform)); }
+    if (s.platforms) {
+      psSelectedPlatforms = s.platforms;
+      document.querySelectorAll('[data-platform]').forEach(b => b.classList.toggle('active', psSelectedPlatforms.includes(b.dataset.platform)));
+    }
     if (s.tone) { psTone = s.tone; document.querySelectorAll('[data-tone]').forEach(b => b.classList.toggle('active', b.dataset.tone === s.tone)); }
     if (s.img) {
       psImage = s.img; psImageType = s.imgType || 'image/jpeg';
@@ -396,30 +408,72 @@ function loadState() {
       document.querySelector('.upload-text').style.display = 'none';
       document.getElementById('uploadZone').classList.add('has-preview');
     }
-    if (s.out && (s.out.blog || s.out.linkedin || s.out.instagram)) {
+    if (s.out && (s.out.blog || s.out.linkedin || s.out.youtube || s.out.instagram)) {
       psOutput = s.out; showOutput();
     }
   } catch(e) {}
 }
 
 // DRAFTS
+const toneLabels={warm:'☀️ 따뜻하고 감성적',professional:'🎯 전문적',story:'📖 이야기체',short:'⚡ 짧고 임팩트'};
+const platformLabels={blog:'N 블로그',linkedin:'LinkedIn',youtube:'YouTube',instagram:'Instagram'};
+
 function saveDraft() {
   try {
     const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
-    const ctx = document.getElementById('contextInput').value;
-    const label = ctx.slice(0,18) || '초안 ' + (drafts.length+1);
-    drafts.unshift({ label, out: psOutput, ctx, ts: Date.now() });
-    if (drafts.length > 6) drafts.pop();
+    const ctx = document.getElementById('contextInput').value.trim();
+    // 중복 방지: 같은 ctx+platform 조합은 업데이트
+    const key = ctx.slice(0,30) + psSelectedPlatforms.join(',');
+    const existIdx = drafts.findIndex(d => d.key === key);
+    const firstLine = (psOutput.blog||psOutput.linkedin||psOutput.youtube||psOutput.instagram||'').split('\n')[0].slice(0,40);
+    const draft = {
+      key,
+      title: ctx.slice(0,22) || '메모 없음',
+      firstLine,
+      platforms: [...psSelectedPlatforms],
+      tone: psTone,
+      out: {...psOutput},
+      ctx,
+      ts: Date.now()
+    };
+    if (existIdx >= 0) drafts[existIdx] = draft;
+    else drafts.unshift(draft);
+    if (drafts.length > 8) drafts.pop();
     localStorage.setItem('ps_drafts', JSON.stringify(drafts));
     renderDrafts();
   } catch(e) {}
 }
+
+function toggleDraftList() {
+  const el = document.getElementById('draftList');
+  const btn = event.target;
+  if (el.style.display === 'none') { el.style.display='block'; btn.textContent='목록 접기 ▴'; }
+  else { el.style.display='none'; btn.textContent='목록 펼치기 ▾'; }
+}
+
 function renderDrafts() {
   try {
     const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
-    document.getElementById('draftChips').innerHTML = drafts.map((d,i) =>
-      `<div class="draft-chip" onclick="loadDraft(${i})">${d.label}… <span style="opacity:0.5;font-size:0.65rem;" onclick="delDraft(event,${i})">✕</span></div>`
-    ).join('');
+    const countEl = document.getElementById('draftCount');
+    if (countEl) countEl.textContent = drafts.length;
+    const chips = document.getElementById('draftChips');
+    if (!chips) return;
+    chips.innerHTML = drafts.map((d,i) => {
+      const pTags = (d.platforms||[]).map(p=>`<span style="font-size:0.68rem;background:var(--cream);padding:2px 6px;border-radius:10px;color:var(--muted);">${platformLabels[p]||p}</span>`).join('');
+      const tTag = `<span style="font-size:0.68rem;background:var(--accent-light);padding:2px 6px;border-radius:10px;color:var(--accent);">${toneLabels[d.tone]||d.tone}</span>`;
+      const dt = d.ts ? new Date(d.ts).toLocaleDateString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+      return `<div style="background:var(--white);border:1.5px solid var(--cream);border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--cream)'" onclick="loadDraft(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;">
+          <div style="font-size:0.85rem;font-weight:600;color:var(--ink);">${d.title}</div>
+          <button onclick="delDraft(event,${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;padding:0 0 0 8px;">✕</button>
+        </div>
+        ${d.firstLine ? `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;line-height:1.4;">${d.firstLine}…</div>` : ''}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
+          ${pTags} ${tTag}
+          <span style="margin-left:auto;font-size:0.68rem;color:var(--muted);">${dt}</span>
+        </div>
+      </div>`;
+    }).join('');
   } catch(e) {}
 }
 function loadDraft(i) {
@@ -440,7 +494,7 @@ function delDraft(e, i) {
 }
 
 function showOutput() {
-  const platforms = psPlatform==='both' ? ['blog','linkedin'] : psPlatform==='instagram' ? ['instagram'] : [psPlatform];
+  const platforms = psSelectedPlatforms;
   document.getElementById('outTabBar').style.display = platforms.length>1 ? 'flex' : 'none';
   document.getElementById('draftsBar').style.display = 'flex';
   renderDrafts();
@@ -478,12 +532,18 @@ document.getElementById('contextInput').addEventListener('input', function() {
   clearTimeout(window._st); window._st = setTimeout(saveState, 800);
 });
 
-document.querySelectorAll('[data-platform]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-platform]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active'); psPlatform = btn.dataset.platform; saveState();
-  });
-});
+function togglePlatform(btn) {
+  const p = btn.dataset.platform;
+  if (psSelectedPlatforms.includes(p)) {
+    if (psSelectedPlatforms.length === 1) return; // 최소 1개는 선택
+    psSelectedPlatforms = psSelectedPlatforms.filter(x => x !== p);
+    btn.classList.remove('active');
+  } else {
+    psSelectedPlatforms.push(p);
+    btn.classList.add('active');
+  }
+  saveState();
+}
 document.querySelectorAll('[data-tone]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-tone]').forEach(b => b.classList.remove('active'));
@@ -519,18 +579,19 @@ async function generatePost() {
   btn.disabled=true; btn.textContent='생성 중...';
   loading.style.display='block'; oa.style.display='none';
   document.getElementById('outTabBar').style.display='none';
-  const platforms=psPlatform==='both'?['blog','linkedin']:psPlatform==='instagram'?['instagram']:[psPlatform];
+  const platforms=psSelectedPlatforms;
   const toneMap={warm:'따뜻하고 감성적인 톤으로',professional:'전문적이고 인사이트를 담아',story:'일상 이야기를 풀어가는 스토리텔링으로',short:'짧고 강렬하게, 핵심만'};
   let prompt=`당신은 SNS 포스트 작성 전문가입니다. ${toneMap[psTone]||'자연스럽게'} 글을 써주세요.\n\n`;
   if(ctx) prompt+=`상황/메모: ${ctx}\n\n`;
   if(psImage) prompt+=`(사진이 첨부되어 있습니다. 사진의 분위기와 내용을 글에 반영해주세요.)\n\n`;
   prompt+=`다음 플랫폼에 맞는 포스트를 작성해주세요:\n`;
   platforms.forEach(p=>{
-    if(p==='blog') prompt+=`\n[BLOG]\n블로그 포스트 (300~500자, 제목 포함, 소제목 활용)\n`;
+    if(p==='blog') prompt+=`\n[BLOG]\n네이버 블로그 포스트 (300~500자). 중요: 마크다운 문법(#, ##, **, *, - 등) 절대 사용 금지. 제목은 첫 줄에 일반 텍스트로, 소제목은 줄바꿈과 공백으로 구분. 복붙했을 때 바로 쓸 수 있는 깔끔한 텍스트로만 작성.\n`;
     if(p==='linkedin') prompt+=`\n[LINKEDIN]\n링크드인 포스트 (200~350자, 인사이트 강조, 마지막 질문으로 마무리)\n`;
+    if(p==='youtube') prompt+=`\n[YOUTUBE]\n유튜브 영상 설명란 (200~400자). 영상 주제 요약, 타임스탬프 힌트, 키워드 포함. 마크다운 금지. 구독/좋아요 유도 문구 포함.\n`;
     if(p==='instagram') prompt+=`\n[INSTAGRAM]\n인스타그램 캡션 (100~200자, 감성적, 해시태그 5개)\n`;
   });
-  prompt+=`\n각 섹션은 [BLOG], [LINKEDIN], [INSTAGRAM] 태그로 구분해주세요.`;
+  prompt+=`\n각 섹션은 [BLOG], [LINKEDIN], [YOUTUBE], [INSTAGRAM] 태그로 구분해주세요.`;
   const {iv,fill}=animateProgress();
   try {
     const messages=[];
@@ -540,14 +601,16 @@ async function generatePost() {
     const data=await res.json();
     const text=data.content?.map(i=>i.text||'').join('\n')||'';
     clearInterval(iv); fill.style.width='100%';
-    const bm=text.match(/\[BLOG\]([\s\S]*?)(?=\[LINKEDIN\]|\[INSTAGRAM\]|$)/);
-    const lm=text.match(/\[LINKEDIN\]([\s\S]*?)(?=\[BLOG\]|\[INSTAGRAM\]|$)/);
-    const im=text.match(/\[INSTAGRAM\]([\s\S]*?)(?=\[BLOG\]|\[LINKEDIN\]|$)/);
-    psOutput={blog:'',linkedin:'',instagram:''};
+    const bm=text.match(/\[BLOG\]([\s\S]*?)(?=\[LINKEDIN\]|\[YOUTUBE\]|\[INSTAGRAM\]|$)/);
+    const lm=text.match(/\[LINKEDIN\]([\s\S]*?)(?=\[BLOG\]|\[YOUTUBE\]|\[INSTAGRAM\]|$)/);
+    const ym=text.match(/\[YOUTUBE\]([\s\S]*?)(?=\[BLOG\]|\[LINKEDIN\]|\[INSTAGRAM\]|$)/);
+    const im=text.match(/\[INSTAGRAM\]([\s\S]*?)(?=\[BLOG\]|\[LINKEDIN\]|\[YOUTUBE\]|$)/);
+    psOutput={blog:'',linkedin:'',youtube:'',instagram:''};
     if(bm) psOutput.blog=bm[1].trim();
     if(lm) psOutput.linkedin=lm[1].trim();
+    if(ym) psOutput.youtube=ym[1].trim();
     if(im) psOutput.instagram=im[1].trim();
-    if(!bm&&!lm&&!im) psOutput[platforms[0]]=text.trim();
+    if(!bm&&!lm&&!ym&&!im) psOutput[platforms[0]]=text.trim();
     setTimeout(()=>{
       loading.style.display='none'; oa.style.display='block';
       document.getElementById('progressBar').style.display='none';
