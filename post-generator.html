@@ -315,11 +315,19 @@
           </div>
 
           <div class="opt-lbl">비율</div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-bottom:4px;letter-spacing:0.03em;">📱 세로</div>
           <div class="opt-row">
             <button class="opt-btn active" data-ratio="1:1" onclick="fsRatio(this)">1:1</button>
             <button class="opt-btn" data-ratio="4:5" onclick="fsRatio(this)">4:5</button>
-            <button class="opt-btn" data-ratio="16:9" onclick="fsRatio(this)">16:9</button>
             <button class="opt-btn" data-ratio="3:4" onclick="fsRatio(this)">3:4</button>
+            <button class="opt-btn" data-ratio="9:16" onclick="fsRatio(this)">9:16</button>
+          </div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-bottom:4px;margin-top:8px;letter-spacing:0.03em;">🖥️ 가로</div>
+          <div class="opt-row">
+            <button class="opt-btn" data-ratio="16:9" onclick="fsRatio(this)">16:9</button>
+            <button class="opt-btn" data-ratio="5:4" onclick="fsRatio(this)">5:4</button>
+            <button class="opt-btn" data-ratio="4:3" onclick="fsRatio(this)">4:3</button>
+            <button class="opt-btn" data-ratio="3:2" onclick="fsRatio(this)">3:2</button>
           </div>
         </div>
       </div>
@@ -573,11 +581,12 @@ function fsThumbs(){
   document.getElementById('fsCount').textContent=fsPhotos.length>0?`${fsPhotos.length}장 선택됨`:'';
 }
 function fsRm(i){fsPhotos.splice(i,1);fsThumbs();}
-function fsLayout(btn){document.querySelectorAll('[data-layout]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsLayoutSel=btn.dataset.layout;}
-function fsGap(btn){document.querySelectorAll('[data-gap]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsGapSel=parseInt(btn.dataset.gap);}
-function fsBg(el){document.querySelectorAll('.bg-sw').forEach(b=>b.classList.remove('active'));el.classList.add('active');fsBgSel=el.dataset.bg;}
-function fsColorPick(val){fsBgSel=val;document.querySelectorAll('.bg-sw').forEach(b=>b.classList.remove('active'));const sw=document.getElementById('colorSwatch');sw.style.background=val;sw.textContent='';}
-function fsRatio(btn){document.querySelectorAll('[data-ratio]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsRatioSel=btn.dataset.ratio;}
+function fsLayout(btn){document.querySelectorAll('[data-layout]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsLayoutSel=btn.dataset.layout;fsAutoPreview();}
+function fsGap(btn){document.querySelectorAll('[data-gap]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsGapSel=parseInt(btn.dataset.gap);fsAutoPreview();}
+function fsBg(el){document.querySelectorAll('.bg-sw').forEach(b=>b.classList.remove('active'));el.classList.add('active');fsBgSel=el.dataset.bg;fsAutoPreview();}
+function fsColorPick(val){fsBgSel=val;document.querySelectorAll('.bg-sw').forEach(b=>b.classList.remove('active'));const sw=document.getElementById('colorSwatch');sw.style.background=val;sw.textContent='';fsAutoPreview();}
+function fsRatio(btn){document.querySelectorAll('[data-ratio]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsRatioSel=btn.dataset.ratio;fsAutoPreview();}
+function fsAutoPreview(){if(fsPhotos.length>0)fsGenerate();}
 
 function fsSlots(W,H,g,pad){
   switch(fsLayoutSel){
@@ -595,7 +604,7 @@ function fsDraw(ctx,img,x,y,w,h){const ia=img.width/img.height,sa=w/h;let sx,sy,
 function fsGenerate(){
   if(fsPhotos.length===0){alert('사진을 먼저 올려주세요 😊');return;}
   const canvas=document.getElementById('collageCanvas'),ctx=canvas.getContext('2d');
-  const r={'1:1':[1,1],'4:5':[4,5],'16:9':[16,9],'3:4':[3,4]},base=1080;
+  const r={'1:1':[1,1],'4:5':[4,5],'16:9':[16,9],'3:4':[3,4],'9:16':[9,16],'5:4':[5,4],'4:3':[4,3],'3:2':[3,2]},base=1080;
   const [rw,rh]=r[fsRatioSel]||[1,1],mx=Math.max(rw,rh);
   const W=base*rw/mx,H=base*rh/mx;
   const g=fsGapSel,pad=g>0?g:0;
@@ -624,8 +633,19 @@ function useInPostSnap(){
 }
 
 // ── INIT ─────────────────────────────────
-loadState();
-renderDrafts();
+// 새 탭에서는 빈 상태로 시작, 새로고침(같은 탭)에서는 복원
+if (sessionStorage.getItem('ps_tab_active')) {
+  loadState();
+} else {
+  sessionStorage.setItem('ps_tab_active', '1');
+  // 임시저장 목록은 보여주되 현재 작업은 비워두기
+  renderDrafts();
+  // 임시저장이 있으면 바 표시
+  try {
+    const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
+    if (drafts.length > 0) document.getElementById('draftsBar').style.display = 'flex';
+  } catch(e) {}
+}
 </script>
 </body>
 </html>
