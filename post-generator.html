@@ -7,741 +7,625 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a1a;
-    --paper: #f5f0e8;
-    --cream: #ede8dc;
-    --accent: #c8602a;
-    --accent-light: #f0d5c4;
-    --muted: #7a7068;
-    --white: #fdfcfa;
+    --ink: #1a1a1a; --paper: #f5f0e8; --cream: #ede8dc;
+    --accent: #c8602a; --accent-light: #f0d5c4; --muted: #7a7068;
+    --white: #fdfcfa; --green: #2d7a4f; --green-light: #d4eddf;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
 
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-  }
-
-  /* HEADER */
   header {
-    padding: 24px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1.5px solid var(--cream);
-    background: var(--white);
+    padding: 18px 40px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1.5px solid var(--cream); background: var(--white);
+    position: sticky; top: 0; z-index: 100;
   }
-
-  .logo {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.6rem;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-  }
-
+  .logo { font-family: 'Instrument Serif', serif; font-size: 1.6rem; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); font-style: italic; }
 
-  .tagline {
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+  .tab-nav { display: flex; gap: 4px; background: var(--cream); border-radius: 10px; padding: 4px; }
+  .tab-nav-btn {
+    padding: 7px 18px; border: none; border-radius: 7px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; background: transparent; color: var(--muted);
   }
+  .tab-nav-btn.active { background: var(--white); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 
-  /* MAIN LAYOUT */
-  main {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 48px 24px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
+  .save-badge {
+    font-size: 0.72rem; color: var(--green); background: var(--green-light);
+    padding: 4px 10px; border-radius: 20px; display: none; align-items: center; gap: 4px;
   }
+  .save-badge.visible { display: flex; }
 
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── POSTSNAP ── */
+  .ps-main {
+    max-width: 960px; margin: 0 auto; padding: 40px 24px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+  }
   @media (max-width: 700px) {
-    main { grid-template-columns: 1fr; padding: 24px 16px; }
-    header { padding: 16px 20px; }
+    .ps-main { grid-template-columns: 1fr; padding: 20px 16px; }
+    header { padding: 14px 16px; }
+    .tab-nav-btn { padding: 6px 12px; font-size: 0.75rem; }
   }
 
-  /* PANEL */
-  .panel {
-    background: var(--white);
-    border-radius: 16px;
-    border: 1.5px solid var(--cream);
-    overflow: hidden;
-  }
+  .panel { background: var(--white); border-radius: 16px; border: 1.5px solid var(--cream); overflow: hidden; }
+  .panel-header { padding: 18px 22px 14px; border-bottom: 1px solid var(--cream); display: flex; align-items: center; gap: 10px; }
+  .step-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .panel-title { font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .panel-body { padding: 22px; }
 
-  .panel-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--cream);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .step-badge {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .panel-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink);
-  }
-
-  .panel-body { padding: 24px; }
-
-  /* UPLOAD ZONE */
-  .upload-zone {
-    border: 2px dashed var(--cream);
-    border-radius: 12px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-  }
-
-  .upload-zone:hover {
-    border-color: var(--accent);
-    background: var(--accent-light);
-  }
-
-  .upload-zone.has-preview {
-    border-style: solid;
-    border-color: var(--accent);
-    padding: 0;
-  }
-
-  .upload-zone input[type="file"] {
-    position: absolute; inset: 0;
-    opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
-
-  .upload-icon {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-    display: block;
-  }
-
-  .upload-text {
-    font-size: 0.9rem;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
+  .upload-zone { border: 2px dashed var(--cream); border-radius: 12px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone.has-preview { border-style: solid; border-color: var(--accent); padding: 0; }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 2.2rem; margin-bottom: 10px; display: block; }
+  .upload-text { font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
   .upload-text strong { color: var(--accent); }
+  #preview-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; display: none; }
 
-  #preview-img {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    display: none;
-  }
-
-  /* CONTEXT INPUT */
-  .context-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  textarea {
-    width: 100%;
-    border: 1.5px solid var(--cream);
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem;
-    color: var(--ink);
-    background: var(--paper);
-    resize: none;
-    line-height: 1.6;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-
+  .ctx-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
+  textarea { width: 100%; border: 1.5px solid var(--cream); border-radius: 10px; padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink); background: var(--paper); resize: none; line-height: 1.6; transition: border-color 0.2s; outline: none; }
   textarea:focus { border-color: var(--accent); }
+  .char-count { font-size: 0.72rem; color: var(--muted); text-align: right; margin-top: 4px; }
 
-  /* TONE SELECTOR */
-  .tone-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  .tone-btn {
-    padding: 10px 12px;
-    border: 1.5px solid var(--cream);
-    border-radius: 8px;
-    background: var(--paper);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: left;
-  }
-
+  .tone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .tone-btn { padding: 9px 10px; border: 1.5px solid var(--cream); border-radius: 8px; background: var(--paper); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: left; }
   .tone-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tone-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
 
-  .tone-btn.active {
-    border-color: var(--accent);
-    background: var(--accent-light);
-    color: var(--accent);
-    font-weight: 600;
-  }
-
-  .tone-emoji { margin-right: 6px; }
-
-  /* GENERATE BUTTON */
-  .generate-btn {
-    width: 100%;
-    margin-top: 20px;
-    padding: 16px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.01em;
-  }
-
+  .generate-btn { width: 100%; margin-top: 18px; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .generate-btn:hover { background: #a84d20; transform: translateY(-1px); }
-  .generate-btn:active { transform: translateY(0); }
   .generate-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
 
-  /* OUTPUT PANEL — spans full width */
-  .output-panel {
-    grid-column: 1 / -1;
-    background: var(--white);
-    border: 1.5px solid var(--cream);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  /* TABS */
-  .tab-bar {
-    display: flex;
-    border-bottom: 1.5px solid var(--cream);
-    background: var(--paper);
-  }
-
-  .tab {
-    padding: 14px 24px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--muted);
-    cursor: pointer;
-    border-bottom: 2.5px solid transparent;
-    transition: all 0.15s;
-  }
-
-  .tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-    background: var(--white);
-  }
-
-  .tab-content { display: none; padding: 28px; }
-  .tab-content.active { display: block; }
-
-  /* GENERATED TEXT */
-  .generated-text {
-    font-size: 0.92rem;
-    line-height: 1.8;
-    color: var(--ink);
-    white-space: pre-wrap;
-    min-height: 120px;
-  }
-
-  .placeholder-text {
-    color: var(--muted);
-    font-style: italic;
-    font-size: 0.88rem;
-    text-align: center;
-    padding: 40px 20px;
-  }
-
-  /* COPY BUTTON */
-  .copy-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    border: 1.5px solid var(--accent);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--accent);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
+  .output-panel { grid-column: 1 / -1; background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; }
+  .out-tab-bar { display: flex; border-bottom: 1.5px solid var(--cream); background: var(--paper); }
+  .out-tab { padding: 13px 22px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; transition: all 0.15s; }
+  .out-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--white); }
+  .out-tab-content { display: none; padding: 26px; }
+  .out-tab-content.active { display: block; }
+  .generated-text { font-size: 0.9rem; line-height: 1.85; color: var(--ink); white-space: pre-wrap; min-height: 100px; }
+  .placeholder-text { color: var(--muted); font-style: italic; font-size: 0.86rem; text-align: center; padding: 40px 20px; }
+  .copy-btn { margin-top: 18px; padding: 9px 18px; border: 1.5px solid var(--accent); border-radius: 8px; background: transparent; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; }
   .copy-btn:hover { background: var(--accent); color: #fff; }
 
-  /* LOADING SPINNER */
-  .loading {
-    display: none;
-    text-align: center;
-    padding: 40px;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
+  .drafts-bar { display: flex; gap: 8px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--cream); background: var(--paper); flex-wrap: wrap; }
+  .drafts-label { font-size: 0.7rem; color: var(--muted); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+  .draft-chip { padding: 4px 10px; border: 1.5px solid var(--cream); border-radius: 20px; font-size: 0.73rem; color: var(--muted); cursor: pointer; background: var(--white); transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
+  .draft-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .save-draft-btn { margin-left: auto; padding: 4px 12px; border: 1.5px solid var(--accent); border-radius: 20px; background: transparent; color: var(--accent); font-size: 0.72rem; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 600; white-space: nowrap; }
 
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--cream);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-
+  .loading { display: none; text-align: center; padding: 40px; color: var(--muted); font-size: 0.88rem; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--cream); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .progress-bar { height: 3px; background: var(--cream); border-radius: 2px; margin-top: 10px; overflow: hidden; display: none; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.3s ease; }
 
-  /* PROGRESS BAR */
-  .progress-bar {
-    height: 3px;
-    background: var(--cream);
-    border-radius: 2px;
-    margin-top: 12px;
-    overflow: hidden;
-    display: none;
+  /* ── FRAMESNAP ── */
+  .fs-main {
+    max-width: 1100px; margin: 0 auto; padding: 32px 24px;
+    display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start;
   }
+  @media (max-width: 800px) { .fs-main { grid-template-columns: 1fr; } }
 
-  .progress-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    width: 0%;
-    transition: width 0.3s ease;
-  }
+  .fs-card { background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
+  .fs-card-hd { padding: 14px 18px; border-bottom: 1px solid var(--cream); display: flex; align-items: center; gap: 10px; background: var(--paper); }
+  .fs-card-bd { padding: 18px; }
 
-  /* API KEY input */
-  .api-notice {
-    background: var(--accent-light);
-    border: 1px solid var(--accent);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 0.82rem;
-    color: var(--accent);
-    margin-bottom: 16px;
-    line-height: 1.5;
-  }
+  .upload-multi { border: 2px dashed var(--cream); border-radius: 10px; padding: 22px 16px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+  .upload-multi:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-multi input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 
-  .api-key-input {
-    width: 100%;
-    border: 1.5px solid var(--cream);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.85rem;
-    background: var(--paper);
-    color: var(--ink);
-    outline: none;
-    margin-bottom: 4px;
-    transition: border-color 0.2s;
-  }
-  .api-key-input:focus { border-color: var(--accent); }
+  .thumb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+  .th { aspect-ratio: 1; border-radius: 7px; overflow: hidden; position: relative; background: var(--cream); }
+  .th img { width: 100%; height: 100%; object-fit: cover; }
+  .th .rm { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #fff; opacity: 0; transition: opacity 0.15s; cursor: pointer; border: none; }
+  .th:hover .rm { opacity: 1; }
 
-  /* CHARACTER COUNT */
-  .char-count {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-align: right;
-    margin-top: 4px;
-  }
+  .lay-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 14px; }
+  .lay-btn { aspect-ratio: 1; border: 1.5px solid var(--cream); border-radius: 8px; background: var(--paper); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; padding: 7px; }
+  .lay-btn:hover { border-color: var(--accent); }
+  .lay-btn.active { border-color: var(--accent); background: var(--accent-light); }
+  .lc { background: var(--muted); border-radius: 2px; opacity: 0.4; }
+  .lc.big { opacity: 0.65; }
+
+  .opt-lbl { font-size: 0.7rem; color: var(--muted); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
+  .opt-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .opt-btn { flex: 1; padding: 7px 4px; border: 1.5px solid var(--cream); border-radius: 6px; background: var(--paper); color: var(--muted); font-size: 0.72rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; text-align: center; }
+  .opt-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  .bg-row { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+  .bg-sw { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; flex-shrink: 0; }
+  .bg-sw.active { border-color: var(--accent); transform: scale(1.15); }
+
+  .fs-gen-btn { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .fs-gen-btn:hover { background: #a84d20; transform: translateY(-1px); }
+
+  .use-btn { width: 100%; margin-top: 10px; padding: 11px; background: transparent; border: 1.5px solid var(--cream); border-radius: 10px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; display: none; }
+  .use-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .use-btn.show { display: block; }
+
+  .cv-wrap { background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; }
+  .cv-hd { padding: 14px 18px; border-bottom: 1px solid var(--cream); display: flex; align-items: center; justify-content: space-between; }
+  .cv-title { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  .dl-btn { padding: 7px 16px; background: transparent; border: 1.5px solid var(--accent); border-radius: 7px; color: var(--accent); font-size: 0.78rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; display: none; }
+  .dl-btn:hover { background: var(--accent); color: #fff; }
+  .dl-btn.show { display: block; }
+  .cv-body { padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 460px; }
+  #collageCanvas { max-width: 100%; border-radius: 8px; display: none; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
+  .cv-ph { text-align: center; color: var(--muted); }
+  .cv-ph .ph-icon { font-size: 2.8rem; display: block; margin-bottom: 10px; opacity: 0.3; }
+  .cv-ph p { font-size: 0.83rem; line-height: 1.7; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">Post<span>Snap</span></div>
-  <div class="tagline">순간을 글로 — 완벽하지 않아도 괜찮아요</div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="save-badge" id="saveBadge">✓ 자동저장됨</div>
+    <div class="tab-nav">
+      <button class="tab-nav-btn active" onclick="switchPage('postsnap',this)">✦ 글 생성</button>
+      <button class="tab-nav-btn" onclick="switchPage('framesnap',this)">🖼️ 콜라주</button>
+    </div>
+  </div>
 </header>
 
-<main>
-
-  <!-- PANEL 1: Upload -->
-  <div class="panel">
-    <div class="panel-header">
-      <div class="step-badge">1</div>
-      <div class="panel-title">사진 / 메모 업로드</div>
-    </div>
-    <div class="panel-body">
-      <div class="upload-zone" id="uploadZone">
-        <input type="file" id="fileInput" accept="image/*">
-        <span class="upload-icon">📷</span>
-        <div class="upload-text">
-          <strong>클릭해서 사진 선택</strong><br>
-          또는 여기로 드래그
+<!-- POSTSNAP -->
+<div class="page active" id="page-postsnap">
+  <div class="ps-main">
+    <div class="panel">
+      <div class="panel-header"><div class="step-badge">1</div><div class="panel-title">사진 / 메모 업로드</div></div>
+      <div class="panel-body">
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept="image/*">
+          <span class="upload-icon">📷</span>
+          <div class="upload-text"><strong>클릭해서 사진 선택</strong><br>또는 드래그</div>
+          <img id="preview-img" alt="">
         </div>
-        <img id="preview-img" alt="미리보기">
-      </div>
-
-      <div style="margin-top: 20px;">
-        <span class="context-label">어떤 순간이었나요? (선택)</span>
-        <textarea id="contextInput" rows="3"
-          placeholder="예: 제주도 여행 중 우연히 발견한 카페. 창밖으로 바다가 보이고 커피가 정말 맛있었다."></textarea>
-        <div class="char-count"><span id="charCount">0</span> / 300자</div>
+        <div style="margin-top:18px;">
+          <span class="ctx-label">어떤 순간이었나요? (선택)</span>
+          <textarea id="contextInput" rows="3" placeholder="예: 제주도 여행 중 우연히 발견한 카페. 창밖으로 바다가 보이고 커피가 정말 맛있었다."></textarea>
+          <div class="char-count"><span id="charCount">0</span> / 300자</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- PANEL 2: Options -->
-  <div class="panel">
-    <div class="panel-header">
-      <div class="step-badge">2</div>
-      <div class="panel-title">톤 & 스타일 선택</div>
-    </div>
-    <div class="panel-body">
-
-      <span class="context-label">어디에 올릴까요?</span>
-      <div class="tone-grid">
-        <button class="tone-btn active" data-platform="blog">
-          <span class="tone-emoji">📝</span>블로그 포스트
-        </button>
-        <button class="tone-btn" data-platform="linkedin">
-          <span class="tone-emoji">💼</span>링크드인
-        </button>
-        <button class="tone-btn" data-platform="both">
-          <span class="tone-emoji">✨</span>둘 다 만들기
-        </button>
-        <button class="tone-btn" data-platform="instagram">
-          <span class="tone-emoji">📸</span>인스타그램
-        </button>
-      </div>
-
-      <div style="margin-top: 20px;">
-        <span class="context-label">글의 분위기</span>
+    <div class="panel">
+      <div class="panel-header"><div class="step-badge">2</div><div class="panel-title">톤 & 스타일 선택</div></div>
+      <div class="panel-body">
+        <span class="ctx-label">어디에 올릴까요?</span>
         <div class="tone-grid">
-          <button class="tone-btn active" data-tone="warm">
-            <span class="tone-emoji">☀️</span>따뜻하고 감성적
-          </button>
-          <button class="tone-btn" data-tone="professional">
-            <span class="tone-emoji">🎯</span>전문적·인사이트
-          </button>
-          <button class="tone-btn" data-tone="story">
-            <span class="tone-emoji">📖</span>이야기체·일상
-          </button>
-          <button class="tone-btn" data-tone="short">
-            <span class="tone-emoji">⚡</span>짧고 임팩트
-          </button>
+          <button class="tone-btn active" data-platform="blog">📝 블로그</button>
+          <button class="tone-btn" data-platform="linkedin">💼 링크드인</button>
+          <button class="tone-btn" data-platform="both">✨ 둘 다</button>
+          <button class="tone-btn" data-platform="instagram">📸 인스타그램</button>
+        </div>
+        <div style="margin-top:18px;">
+          <span class="ctx-label">글의 분위기</span>
+          <div class="tone-grid">
+            <button class="tone-btn active" data-tone="warm">☀️ 따뜻하고 감성적</button>
+            <button class="tone-btn" data-tone="professional">🎯 전문적·인사이트</button>
+            <button class="tone-btn" data-tone="story">📖 이야기체·일상</button>
+            <button class="tone-btn" data-tone="short">⚡ 짧고 임팩트</button>
+          </div>
+        </div>
+        <button class="generate-btn" id="generateBtn" onclick="generatePost()">✦ 포스트 자동 생성하기</button>
+        <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="output-panel">
+      <div class="panel-header" style="background:var(--white);">
+        <div class="step-badge">3</div>
+        <div class="panel-title">생성된 포스트</div>
+      </div>
+      <div class="drafts-bar" id="draftsBar" style="display:none;">
+        <span class="drafts-label">📁 임시저장</span>
+        <div id="draftChips" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <button class="save-draft-btn" onclick="saveDraft()">+ 저장</button>
+      </div>
+      <div class="out-tab-bar" id="outTabBar" style="display:none;">
+        <div class="out-tab active" data-tab="blog" onclick="switchOutTab('blog')">📝 블로그</div>
+        <div class="out-tab" data-tab="linkedin" onclick="switchOutTab('linkedin')">💼 링크드인</div>
+        <div class="out-tab" data-tab="instagram" onclick="switchOutTab('instagram')">📸 인스타그램</div>
+      </div>
+      <div class="loading" id="loading"><div class="spinner"></div>AI가 글을 쓰고 있어요... ✍️</div>
+      <div id="outputArea">
+        <div class="out-tab-content active" id="tab-blog">
+          <div class="placeholder-text">① 사진이나 메모를 올리고<br>② 스타일을 골라서<br>③ 버튼을 눌러보세요 🪄</div>
+        </div>
+        <div class="out-tab-content" id="tab-linkedin"></div>
+        <div class="out-tab-content" id="tab-instagram"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FRAMESNAP -->
+<div class="page" id="page-framesnap">
+  <div class="fs-main">
+    <div>
+      <div class="fs-card">
+        <div class="fs-card-hd"><div class="step-badge">1</div><div class="panel-title">사진 올리기</div></div>
+        <div class="fs-card-bd">
+          <div class="upload-multi" id="fsZone">
+            <input type="file" id="fsInput" accept="image/*" multiple>
+            <span style="font-size:1.8rem;display:block;margin-bottom:8px;">🖼️</span>
+            <div style="font-size:0.82rem;color:var(--muted);line-height:1.5;"><strong style="color:var(--accent)">클릭 또는 드래그</strong><br>여러 장 한번에 선택 가능</div>
+          </div>
+          <div class="thumb-grid" id="fsThumbs"></div>
+          <div style="font-size:0.73rem;color:var(--muted);text-align:right;margin-top:6px;" id="fsCount"></div>
         </div>
       </div>
 
-      <button class="generate-btn" id="generateBtn" onclick="generatePost()">
-        ✦ 포스트 자동 생성하기
-      </button>
-      <div class="progress-bar" id="progressBar">
-        <div class="progress-fill" id="progressFill"></div>
-      </div>
+      <div class="fs-card">
+        <div class="fs-card-hd"><div class="step-badge">2</div><div class="panel-title">레이아웃 & 옵션</div></div>
+        <div class="fs-card-bd">
+          <div class="lay-grid">
+            <button class="lay-btn active" data-layout="2h" onclick="fsLayout(this)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;width:100%;height:100%;"><div class="lc"></div><div class="lc"></div></div>
+            </button>
+            <button class="lay-btn" data-layout="2v" onclick="fsLayout(this)">
+              <div style="display:grid;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;"><div class="lc"></div><div class="lc"></div></div>
+            </button>
+            <button class="lay-btn" data-layout="3" onclick="fsLayout(this)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc big" style="grid-column:span 2"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="4" onclick="fsLayout(this)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="feature" onclick="fsLayout(this)">
+              <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc big" style="grid-row:span 2"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="strip" onclick="fsLayout(this)">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+          </div>
 
-    </div>
-  </div>
+          <div class="opt-lbl">여백</div>
+          <div class="opt-row">
+            <button class="opt-btn active" data-gap="0" onclick="fsGap(this)">없음</button>
+            <button class="opt-btn" data-gap="8" onclick="fsGap(this)">좁게</button>
+            <button class="opt-btn" data-gap="16" onclick="fsGap(this)">보통</button>
+            <button class="opt-btn" data-gap="28" onclick="fsGap(this)">넓게</button>
+          </div>
 
-  <!-- OUTPUT PANEL -->
-  <div class="output-panel">
-    <div class="panel-header" style="background: var(--white);">
-      <div class="step-badge">3</div>
-      <div class="panel-title">생성된 포스트</div>
-    </div>
+          <div class="opt-lbl">배경색</div>
+          <div class="bg-row" style="margin-bottom:12px;">
+            <div class="bg-sw active" style="background:#ffffff" data-bg="#ffffff" onclick="fsBg(this)"></div>
+            <div class="bg-sw" style="background:#1a1a1a;" data-bg="#1a1a1a" onclick="fsBg(this)"></div>
+            <div class="bg-sw" style="background:#f5f0e8" data-bg="#f5f0e8" onclick="fsBg(this)"></div>
+            <div class="bg-sw" style="background:#e8c97a" data-bg="#e8c97a" onclick="fsBg(this)"></div>
+            <div class="bg-sw" style="background:#c8602a" data-bg="#c8602a" onclick="fsBg(this)"></div>
+            <div class="bg-sw" style="background:#2d4a3e" data-bg="#2d4a3e" onclick="fsBg(this)"></div>
+            <div style="position:relative;width:26px;height:26px;cursor:pointer;" title="자유롭게 색상 선택">
+              <input type="color" id="colorPicker" value="#ffffff" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;" oninput="fsColorPick(this.value)">
+              <div id="colorSwatch" style="width:26px;height:26px;border-radius:50%;background:var(--cream);border:2px dashed var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.78rem;pointer-events:none;">🎨</div>
+            </div>
+          </div>
 
-    <div class="tab-bar" id="tabBar" style="display:none;">
-      <div class="tab active" data-tab="blog" onclick="switchTab('blog')">📝 블로그</div>
-      <div class="tab" data-tab="linkedin" onclick="switchTab('linkedin')">💼 링크드인</div>
-      <div class="tab" data-tab="instagram" onclick="switchTab('instagram')">📸 인스타그램</div>
-    </div>
-
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      AI가 글을 쓰고 있어요... 잠깐만요 ✍️
-    </div>
-
-    <div id="outputArea">
-      <div class="tab-content active" id="tab-blog">
-        <div class="placeholder-text">
-          ① 사진이나 메모를 올리고<br>② 스타일을 골라서<br>③ 버튼을 눌러보세요 🪄
+          <div class="opt-lbl">비율</div>
+          <div class="opt-row">
+            <button class="opt-btn active" data-ratio="1:1" onclick="fsRatio(this)">1:1</button>
+            <button class="opt-btn" data-ratio="4:5" onclick="fsRatio(this)">4:5</button>
+            <button class="opt-btn" data-ratio="16:9" onclick="fsRatio(this)">16:9</button>
+            <button class="opt-btn" data-ratio="3:4" onclick="fsRatio(this)">3:4</button>
+          </div>
         </div>
       </div>
-      <div class="tab-content" id="tab-linkedin"></div>
-      <div class="tab-content" id="tab-instagram"></div>
+
+      <button class="fs-gen-btn" onclick="fsGenerate()">✦ 콜라주 만들기</button>
+      <button class="use-btn" id="useBtn" onclick="useInPostSnap()">📝 이 콜라주로 PostSnap에서 글 쓰기 →</button>
     </div>
 
+    <div class="cv-wrap">
+      <div class="cv-hd">
+        <div class="cv-title">미리보기</div>
+        <button class="dl-btn" id="dlBtn" onclick="fsDownload()">⬇ 저장하기</button>
+      </div>
+      <div class="cv-body">
+        <div class="cv-ph" id="cvPh">
+          <span class="ph-icon">🖼️</span>
+          <p>사진을 올리고<br>레이아웃을 골라서<br>콜라주를 만들어보세요</p>
+        </div>
+        <canvas id="collageCanvas"></canvas>
+      </div>
+    </div>
   </div>
-
-</main>
+</div>
 
 <script>
-  // ── STATE ──────────────────────────────────────────────
-  let selectedPlatform = 'blog';
-  let selectedTone = 'warm';
-  let uploadedImageBase64 = null;
-  let uploadedImageType = 'image/jpeg';
+// ── PAGE SWITCH ──────────────────────────
+function switchPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+}
 
-  // ── FILE UPLOAD ────────────────────────────────────────
-  const fileInput = document.getElementById('fileInput');
-  const previewImg = document.getElementById('preview-img');
-  const uploadZone = document.getElementById('uploadZone');
+// ── POSTSNAP ─────────────────────────────
+let psPlatform = 'blog', psTone = 'warm';
+let psImage = null, psImageType = 'image/jpeg';
+let psOutput = { blog:'', linkedin:'', instagram:'' };
 
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      uploadedImageBase64 = ev.target.result.split(',')[1];
-      uploadedImageType = file.type || 'image/jpeg';
-      previewImg.src = ev.target.result;
-      previewImg.style.display = 'block';
-      uploadZone.querySelector('.upload-icon').style.display = 'none';
-      uploadZone.querySelector('.upload-text').style.display = 'none';
-      uploadZone.classList.add('has-preview');
-    };
+function saveState() {
+  try {
+    localStorage.setItem('ps_state', JSON.stringify({
+      ctx: document.getElementById('contextInput').value,
+      platform: psPlatform, tone: psTone,
+      img: psImage, imgType: psImageType, out: psOutput
+    }));
+    const b = document.getElementById('saveBadge');
+    b.classList.add('visible');
+    clearTimeout(window._bt);
+    window._bt = setTimeout(() => b.classList.remove('visible'), 2000);
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ps_state') || 'null');
+    if (!s) return;
+    if (s.ctx) { document.getElementById('contextInput').value = s.ctx; document.getElementById('charCount').textContent = s.ctx.length; }
+    if (s.platform) { psPlatform = s.platform; document.querySelectorAll('[data-platform]').forEach(b => b.classList.toggle('active', b.dataset.platform === s.platform)); }
+    if (s.tone) { psTone = s.tone; document.querySelectorAll('[data-tone]').forEach(b => b.classList.toggle('active', b.dataset.tone === s.tone)); }
+    if (s.img) {
+      psImage = s.img; psImageType = s.imgType || 'image/jpeg';
+      const img = document.getElementById('preview-img');
+      img.src = 'data:' + psImageType + ';base64,' + s.img;
+      img.style.display = 'block';
+      document.querySelector('.upload-icon').style.display = 'none';
+      document.querySelector('.upload-text').style.display = 'none';
+      document.getElementById('uploadZone').classList.add('has-preview');
+    }
+    if (s.out && (s.out.blog || s.out.linkedin || s.out.instagram)) {
+      psOutput = s.out; showOutput();
+    }
+  } catch(e) {}
+}
+
+// DRAFTS
+function saveDraft() {
+  try {
+    const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
+    const ctx = document.getElementById('contextInput').value;
+    const label = ctx.slice(0,18) || '초안 ' + (drafts.length+1);
+    drafts.unshift({ label, out: psOutput, ctx, ts: Date.now() });
+    if (drafts.length > 6) drafts.pop();
+    localStorage.setItem('ps_drafts', JSON.stringify(drafts));
+    renderDrafts();
+  } catch(e) {}
+}
+function renderDrafts() {
+  try {
+    const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
+    document.getElementById('draftChips').innerHTML = drafts.map((d,i) =>
+      `<div class="draft-chip" onclick="loadDraft(${i})">${d.label}… <span style="opacity:0.5;font-size:0.65rem;" onclick="delDraft(event,${i})">✕</span></div>`
+    ).join('');
+  } catch(e) {}
+}
+function loadDraft(i) {
+  try {
+    const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
+    const d = drafts[i]; if(!d) return;
+    document.getElementById('contextInput').value = d.ctx || '';
+    document.getElementById('charCount').textContent = (d.ctx||'').length;
+    psOutput = d.out; showOutput();
+  } catch(e) {}
+}
+function delDraft(e, i) {
+  e.stopPropagation();
+  try {
+    const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
+    drafts.splice(i,1); localStorage.setItem('ps_drafts', JSON.stringify(drafts)); renderDrafts();
+  } catch(e) {}
+}
+
+function showOutput() {
+  const platforms = psPlatform==='both' ? ['blog','linkedin'] : psPlatform==='instagram' ? ['instagram'] : [psPlatform];
+  document.getElementById('outTabBar').style.display = platforms.length>1 ? 'flex' : 'none';
+  document.getElementById('draftsBar').style.display = 'flex';
+  renderDrafts();
+  platforms.forEach(p => {
+    const el = document.getElementById('tab-'+p);
+    if (el && psOutput[p]) el.innerHTML = `<div class="generated-text" id="text-${p}">${psOutput[p]}</div><button class="copy-btn" onclick="copyText('text-${p}')">📋 복사하기</button>`;
+  });
+  switchOutTab(platforms[0]);
+  document.getElementById('outputArea').style.display = 'block';
+}
+
+// UPLOAD
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    psImage = ev.target.result.split(',')[1]; psImageType = file.type || 'image/jpeg';
+    const img = document.getElementById('preview-img');
+    img.src = ev.target.result; img.style.display = 'block';
+    document.querySelector('.upload-icon').style.display = 'none';
+    document.querySelector('.upload-text').style.display = 'none';
+    document.getElementById('uploadZone').classList.add('has-preview');
+    saveState();
+  };
+  reader.readAsDataURL(file);
+});
+
+const uz = document.getElementById('uploadZone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.style.borderColor='var(--accent)'; });
+uz.addEventListener('dragleave', () => { uz.style.borderColor=''; });
+uz.addEventListener('drop', e => { e.preventDefault(); const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')){document.getElementById('fileInput').files=e.dataTransfer.files;document.getElementById('fileInput').dispatchEvent(new Event('change'));} });
+
+document.getElementById('contextInput').addEventListener('input', function() {
+  document.getElementById('charCount').textContent = this.value.length;
+  clearTimeout(window._st); window._st = setTimeout(saveState, 800);
+});
+
+document.querySelectorAll('[data-platform]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-platform]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); psPlatform = btn.dataset.platform; saveState();
+  });
+});
+document.querySelectorAll('[data-tone]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-tone]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); psTone = btn.dataset.tone; saveState();
+  });
+});
+
+function switchOutTab(tab) {
+  document.querySelectorAll('.out-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.out-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+  document.getElementById('tab-'+tab)?.classList.add('active');
+}
+function copyText(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el?.innerText||'').then(() => {
+    const btn = el?.nextElementSibling;
+    if(btn){btn.textContent='✓ 복사됨!';setTimeout(()=>btn.textContent='📋 복사하기',2000);}
+  });
+}
+
+function animateProgress() {
+  const bar=document.getElementById('progressBar'), fill=document.getElementById('progressFill');
+  bar.style.display='block'; fill.style.width='0%'; let p=0;
+  const iv=setInterval(()=>{p+=Math.random()*15;if(p>90)p=90;fill.style.width=p+'%';},400);
+  return {iv,fill};
+}
+
+async function generatePost() {
+  const btn=document.getElementById('generateBtn'), loading=document.getElementById('loading'), oa=document.getElementById('outputArea');
+  const ctx=document.getElementById('contextInput').value.trim();
+  if(!ctx&&!psImage){alert('사진을 올리거나 메모를 입력해주세요 😊');return;}
+  btn.disabled=true; btn.textContent='생성 중...';
+  loading.style.display='block'; oa.style.display='none';
+  document.getElementById('outTabBar').style.display='none';
+  const platforms=psPlatform==='both'?['blog','linkedin']:psPlatform==='instagram'?['instagram']:[psPlatform];
+  const toneMap={warm:'따뜻하고 감성적인 톤으로',professional:'전문적이고 인사이트를 담아',story:'일상 이야기를 풀어가는 스토리텔링으로',short:'짧고 강렬하게, 핵심만'};
+  let prompt=`당신은 SNS 포스트 작성 전문가입니다. ${toneMap[psTone]||'자연스럽게'} 글을 써주세요.\n\n`;
+  if(ctx) prompt+=`상황/메모: ${ctx}\n\n`;
+  if(psImage) prompt+=`(사진이 첨부되어 있습니다. 사진의 분위기와 내용을 글에 반영해주세요.)\n\n`;
+  prompt+=`다음 플랫폼에 맞는 포스트를 작성해주세요:\n`;
+  platforms.forEach(p=>{
+    if(p==='blog') prompt+=`\n[BLOG]\n블로그 포스트 (300~500자, 제목 포함, 소제목 활용)\n`;
+    if(p==='linkedin') prompt+=`\n[LINKEDIN]\n링크드인 포스트 (200~350자, 인사이트 강조, 마지막 질문으로 마무리)\n`;
+    if(p==='instagram') prompt+=`\n[INSTAGRAM]\n인스타그램 캡션 (100~200자, 감성적, 해시태그 5개)\n`;
+  });
+  prompt+=`\n각 섹션은 [BLOG], [LINKEDIN], [INSTAGRAM] 태그로 구분해주세요.`;
+  const {iv,fill}=animateProgress();
+  try {
+    const messages=[];
+    if(psImage){messages.push({role:'user',content:[{type:'image',source:{type:'base64',media_type:psImageType,data:psImage}},{type:'text',text:prompt}]});}
+    else{messages.push({role:'user',content:prompt});}
+    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages})});
+    const data=await res.json();
+    const text=data.content?.map(i=>i.text||'').join('\n')||'';
+    clearInterval(iv); fill.style.width='100%';
+    const bm=text.match(/\[BLOG\]([\s\S]*?)(?=\[LINKEDIN\]|\[INSTAGRAM\]|$)/);
+    const lm=text.match(/\[LINKEDIN\]([\s\S]*?)(?=\[BLOG\]|\[INSTAGRAM\]|$)/);
+    const im=text.match(/\[INSTAGRAM\]([\s\S]*?)(?=\[BLOG\]|\[LINKEDIN\]|$)/);
+    psOutput={blog:'',linkedin:'',instagram:''};
+    if(bm) psOutput.blog=bm[1].trim();
+    if(lm) psOutput.linkedin=lm[1].trim();
+    if(im) psOutput.instagram=im[1].trim();
+    if(!bm&&!lm&&!im) psOutput[platforms[0]]=text.trim();
+    setTimeout(()=>{
+      loading.style.display='none'; oa.style.display='block';
+      document.getElementById('progressBar').style.display='none';
+      showOutput(); saveState();
+    },400);
+  } catch(err) {
+    clearInterval(iv); loading.style.display='none'; oa.style.display='block';
+    document.getElementById('tab-blog').innerHTML=`<div class="generated-text">❌ 오류: ${err.message}</div>`;
+    document.getElementById('tab-blog').classList.add('active');
+  }
+  btn.disabled=false; btn.textContent='✦ 포스트 자동 생성하기';
+}
+
+// ── FRAMESNAP ────────────────────────────
+let fsPhotos=[], fsLayoutSel='2h', fsGapSel=0, fsBgSel='#ffffff', fsRatioSel='1:1', fsDataUrl=null;
+
+document.getElementById('fsInput').addEventListener('change', function(e) {
+  Array.from(e.target.files).forEach(file => {
+    const reader=new FileReader();
+    reader.onload=ev=>{const img=new Image();img.onload=()=>{fsPhotos.push({src:ev.target.result,img,type:file.type});fsThumbs();};img.src=ev.target.result;};
     reader.readAsDataURL(file);
-  });
+  }); this.value='';
+});
+const fz=document.getElementById('fsZone');
+fz.addEventListener('dragover',e=>{e.preventDefault();fz.style.borderColor='var(--accent)';});
+fz.addEventListener('dragleave',()=>{fz.style.borderColor='';});
+fz.addEventListener('drop',e=>{e.preventDefault();fz.style.borderColor='';Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(file=>{const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{fsPhotos.push({src:ev.target.result,img,type:file.type});fsThumbs();};img.src=ev.target.result;};r.readAsDataURL(file);});});
 
-  // Drag & Drop
-  uploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadZone.style.borderColor = 'var(--accent)';
-  });
-  uploadZone.addEventListener('dragleave', () => {
-    uploadZone.style.borderColor = '';
-  });
-  uploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      fileInput.files = e.dataTransfer.files;
-      fileInput.dispatchEvent(new Event('change'));
-    }
-  });
+function fsThumbs(){
+  document.getElementById('fsThumbs').innerHTML=fsPhotos.map((p,i)=>`<div class="th"><img src="${p.src}"><button class="rm" onclick="fsRm(${i})">✕</button></div>`).join('');
+  document.getElementById('fsCount').textContent=fsPhotos.length>0?`${fsPhotos.length}장 선택됨`:'';
+}
+function fsRm(i){fsPhotos.splice(i,1);fsThumbs();}
+function fsLayout(btn){document.querySelectorAll('[data-layout]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsLayoutSel=btn.dataset.layout;}
+function fsGap(btn){document.querySelectorAll('[data-gap]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsGapSel=parseInt(btn.dataset.gap);}
+function fsBg(el){document.querySelectorAll('.bg-sw').forEach(b=>b.classList.remove('active'));el.classList.add('active');fsBgSel=el.dataset.bg;}
+function fsColorPick(val){fsBgSel=val;document.querySelectorAll('.bg-sw').forEach(b=>b.classList.remove('active'));const sw=document.getElementById('colorSwatch');sw.style.background=val;sw.textContent='';}
+function fsRatio(btn){document.querySelectorAll('[data-ratio]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');fsRatioSel=btn.dataset.ratio;}
 
-  // ── CHARACTER COUNT ────────────────────────────────────
-  const contextInput = document.getElementById('contextInput');
-  const charCount = document.getElementById('charCount');
-  contextInput.addEventListener('input', () => {
-    charCount.textContent = contextInput.value.length;
-  });
-
-  // ── PLATFORM BUTTONS ───────────────────────────────────
-  document.querySelectorAll('[data-platform]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-platform]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedPlatform = btn.dataset.platform;
-    });
-  });
-
-  // ── TONE BUTTONS ───────────────────────────────────────
-  document.querySelectorAll('[data-tone]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-tone]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedTone = btn.dataset.tone;
-    });
-  });
-
-  // ── TAB SWITCH ─────────────────────────────────────────
-  function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
-    document.getElementById(`tab-${tab}`)?.classList.add('active');
+function fsSlots(W,H,g,pad){
+  switch(fsLayoutSel){
+    case '2h':return[{x:pad,y:pad,w:(W-3*pad-g)/2,h:H-2*pad},{x:pad+(W-3*pad-g)/2+g+pad,y:pad,w:(W-3*pad-g)/2,h:H-2*pad}];
+    case '2v':return[{x:pad,y:pad,w:W-2*pad,h:(H-3*pad-g)/2},{x:pad,y:pad+(H-3*pad-g)/2+g+pad,w:W-2*pad,h:(H-3*pad-g)/2}];
+    case '3':{const th=(H-3*pad-g)*0.55,bh=H-3*pad-g-th,bw=(W-3*pad-g)/2;return[{x:pad,y:pad,w:W-2*pad,h:th},{x:pad,y:pad+th+g,w:bw,h:bh},{x:pad+bw+g,y:pad+th+g,w:bw,h:bh}];}
+    case '4':{const hw=(W-3*pad-g)/2,hh=(H-3*pad-g)/2;return[{x:pad,y:pad,w:hw,h:hh},{x:pad+hw+g,y:pad,w:hw,h:hh},{x:pad,y:pad+hh+g,w:hw,h:hh},{x:pad+hw+g,y:pad+hh+g,w:hw,h:hh}];}
+    case 'feature':{const fw=(W-3*pad-g)*0.6,sw=W-3*pad-g-fw,sh=(H-3*pad-g)/2;return[{x:pad,y:pad,w:fw,h:H-2*pad},{x:pad+fw+g,y:pad,w:sw,h:sh},{x:pad+fw+g,y:pad+sh+g,w:sw,h:sh}];}
+    case 'strip':{const sw=(W-4*pad-2*g)/3;return[{x:pad,y:pad,w:sw,h:H-2*pad},{x:pad+sw+g,y:pad,w:sw,h:H-2*pad},{x:pad+2*(sw+g),y:pad,w:sw,h:H-2*pad}];}
+    default:return[{x:pad,y:pad,w:W-2*pad,h:H-2*pad}];
   }
+}
+function fsDraw(ctx,img,x,y,w,h){const ia=img.width/img.height,sa=w/h;let sx,sy,sw,sh;if(ia>sa){sh=img.height;sw=sh*sa;sx=(img.width-sw)/2;sy=0;}else{sw=img.width;sh=sw/sa;sx=0;sy=(img.height-sh)/2;}ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);ctx.restore();}
 
-  // ── COPY ───────────────────────────────────────────────
-  function copyText(id) {
-    const el = document.getElementById(id);
-    const text = el?.innerText || '';
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = el?.nextElementSibling;
-      if (btn) { btn.textContent = '✓ 복사됨!'; setTimeout(() => btn.textContent = '📋 복사하기', 2000); }
-    });
-  }
+function fsGenerate(){
+  if(fsPhotos.length===0){alert('사진을 먼저 올려주세요 😊');return;}
+  const canvas=document.getElementById('collageCanvas'),ctx=canvas.getContext('2d');
+  const r={'1:1':[1,1],'4:5':[4,5],'16:9':[16,9],'3:4':[3,4]},base=1080;
+  const [rw,rh]=r[fsRatioSel]||[1,1],mx=Math.max(rw,rh);
+  const W=base*rw/mx,H=base*rh/mx;
+  const g=fsGapSel,pad=g>0?g:0;
+  canvas.width=W;canvas.height=H;
+  ctx.fillStyle=fsBgSel;ctx.fillRect(0,0,W,H);
+  fsSlots(W,H,g,pad).forEach((s,i)=>fsDraw(ctx,fsPhotos[i%fsPhotos.length].img,s.x,s.y,s.w,s.h));
+  fsDataUrl=canvas.toDataURL('image/jpeg',0.95);
+  document.getElementById('cvPh').style.display='none';
+  canvas.style.display='block';
+  document.getElementById('dlBtn').classList.add('show');
+  document.getElementById('useBtn').classList.add('show');
+}
+function fsDownload(){if(!fsDataUrl)return;const a=document.createElement('a');a.href=fsDataUrl;a.download=`framesnap-${Date.now()}.jpg`;a.click();}
 
-  // ── PROGRESS ANIMATION ─────────────────────────────────
-  function animateProgress() {
-    const bar = document.getElementById('progressBar');
-    const fill = document.getElementById('progressFill');
-    bar.style.display = 'block';
-    fill.style.width = '0%';
-    let p = 0;
-    const interval = setInterval(() => {
-      p += Math.random() * 15;
-      if (p > 90) p = 90;
-      fill.style.width = p + '%';
-    }, 400);
-    return { interval, fill };
-  }
+function useInPostSnap(){
+  if(!fsDataUrl)return;
+  psImage=fsDataUrl.split(',')[1]; psImageType='image/jpeg';
+  const img=document.getElementById('preview-img');
+  img.src=fsDataUrl;img.style.display='block';
+  document.querySelector('.upload-icon').style.display='none';
+  document.querySelector('.upload-text').style.display='none';
+  document.getElementById('uploadZone').classList.add('has-preview');
+  switchPage('postsnap',document.querySelector('.tab-nav-btn'));
+  saveState();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-  // ── BUILD PROMPT ───────────────────────────────────────
-  function buildPrompt() {
-    const context = contextInput.value.trim();
-    const toneMap = {
-      warm: '따뜻하고 감성적인 톤으로',
-      professional: '전문적이고 인사이트를 담아',
-      story: '일상 이야기를 풀어가는 스토리텔링 방식으로',
-      short: '짧고 강렬하게, 핵심만'
-    };
-    const toneDesc = toneMap[selectedTone] || '자연스럽게';
-
-    const platforms = selectedPlatform === 'both'
-      ? ['blog', 'linkedin']
-      : selectedPlatform === 'instagram'
-      ? ['instagram']
-      : [selectedPlatform];
-
-    let prompt = `당신은 SNS 포스트 작성 전문가입니다. ${toneDesc} 글을 써주세요.\n\n`;
-    if (context) prompt += `상황/메모: ${context}\n\n`;
-    if (uploadedImageBase64) prompt += `(사진이 첨부되어 있습니다. 사진의 분위기와 내용을 글에 반영해주세요.)\n\n`;
-
-    prompt += `다음 플랫폼에 맞는 포스트를 작성해주세요:\n`;
-
-    platforms.forEach(p => {
-      if (p === 'blog') prompt += `\n[BLOG]\n블로그 포스트 (300~500자, 제목 포함, 소제목 활용, 독자가 끝까지 읽고 싶게)\n`;
-      if (p === 'linkedin') prompt += `\n[LINKEDIN]\n링크드인 포스트 (200~350자, 인사이트나 배움 강조, 마지막에 짧은 질문으로 마무리)\n`;
-      if (p === 'instagram') prompt += `\n[INSTAGRAM]\n인스타그램 캡션 (100~200자, 감성적, 해시태그 5개 포함)\n`;
-    });
-
-    prompt += `\n각 섹션은 [BLOG], [LINKEDIN], [INSTAGRAM] 태그로 구분해주세요. 완벽하지 않아도 괜찮으니 자연스럽게 써주세요.`;
-    return { prompt, platforms };
-  }
-
-  // ── RENDER OUTPUT ──────────────────────────────────────
-  function renderOutput(text, platforms) {
-    const tabBar = document.getElementById('tabBar');
-    const sections = { blog: '', linkedin: '', instagram: '' };
-
-    // Parse sections
-    const blogMatch = text.match(/\[BLOG\]([\s\S]*?)(?=\[LINKEDIN\]|\[INSTAGRAM\]|$)/);
-    const linkedinMatch = text.match(/\[LINKEDIN\]([\s\S]*?)(?=\[BLOG\]|\[INSTAGRAM\]|$)/);
-    const instaMatch = text.match(/\[INSTAGRAM\]([\s\S]*?)(?=\[BLOG\]|\[LINKEDIN\]|$)/);
-
-    if (blogMatch) sections.blog = blogMatch[1].trim();
-    if (linkedinMatch) sections.linkedin = linkedinMatch[1].trim();
-    if (instaMatch) sections.instagram = instaMatch[1].trim();
-
-    // If no tags found, put everything in the primary platform
-    if (!blogMatch && !linkedinMatch && !instaMatch) {
-      sections[platforms[0]] = text.trim();
-    }
-
-    // Show tabs
-    const hasTabs = platforms.length > 1 || selectedPlatform === 'both';
-    tabBar.style.display = hasTabs ? 'flex' : 'none';
-
-    // Populate tabs
-    platforms.forEach((p, i) => {
-      const el = document.getElementById(`tab-${p}`);
-      if (el) {
-        el.innerHTML = `
-          <div class="generated-text" id="text-${p}">${sections[p] || text.trim()}</div>
-          <button class="copy-btn" onclick="copyText('text-${p}')">📋 복사하기</button>
-        `;
-      }
-    });
-
-    switchTab(platforms[0]);
-  }
-
-  // ── MAIN GENERATE ──────────────────────────────────────
-  async function generatePost() {
-    const btn = document.getElementById('generateBtn');
-    const loading = document.getElementById('loading');
-    const outputArea = document.getElementById('outputArea');
-
-    if (!contextInput.value.trim() && !uploadedImageBase64) {
-      alert('사진을 올리거나 메모를 입력해주세요 😊');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = '생성 중...';
-    loading.style.display = 'block';
-    outputArea.style.display = 'none';
-    document.getElementById('tabBar').style.display = 'none';
-
-    const { prompt, platforms } = buildPrompt();
-    const { interval, fill } = animateProgress();
-
-    try {
-      const messages = [];
-
-      if (uploadedImageBase64) {
-        messages.push({
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: uploadedImageType, data: uploadedImageBase64 } },
-            { type: 'text', text: prompt }
-          ]
-        });
-      } else {
-        messages.push({ role: 'user', content: prompt });
-      }
-
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages
-        })
-      });
-
-      const data = await response.json();
-      const text = data.content?.map(i => i.text || '').join('\n') || '';
-
-      clearInterval(interval);
-      fill.style.width = '100%';
-
-      setTimeout(() => {
-        loading.style.display = 'none';
-        outputArea.style.display = 'block';
-        document.getElementById('progressBar').style.display = 'none';
-        renderOutput(text, platforms);
-      }, 400);
-
-    } catch (err) {
-      clearInterval(interval);
-      loading.style.display = 'none';
-      outputArea.style.display = 'block';
-      document.getElementById('progressBar').style.display = 'none';
-      document.getElementById('tab-blog').innerHTML = `
-        <div class="generated-text">❌ 오류가 발생했어요: ${err.message}</div>
-      `;
-      document.getElementById('tab-blog').classList.add('active');
-    }
-
-    btn.disabled = false;
-    btn.textContent = '✦ 포스트 자동 생성하기';
-  }
+// ── INIT ─────────────────────────────────
+loadState();
+renderDrafts();
 </script>
 </body>
 </html>
