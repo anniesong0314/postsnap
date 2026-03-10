@@ -286,31 +286,90 @@
       <div class="fs-card">
         <div class="fs-card-hd"><div class="step-badge">2</div><div class="panel-title">레이아웃 & 옵션</div></div>
         <div class="fs-card-bd">
-          <div class="lay-grid">
-            <button class="lay-btn active" data-layout="2h" onclick="fsLayout(this)">
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:5px;font-weight:600;">2장</div>
+          <div class="lay-grid" style="margin-bottom:10px;">
+            <button class="lay-btn active" data-layout="2h" onclick="fsLayout(this)" title="좌우 2분할">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;width:100%;height:100%;"><div class="lc"></div><div class="lc"></div></div>
             </button>
-            <button class="lay-btn" data-layout="2v" onclick="fsLayout(this)">
+            <button class="lay-btn" data-layout="2v" onclick="fsLayout(this)" title="상하 2분할">
               <div style="display:grid;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;"><div class="lc"></div><div class="lc"></div></div>
             </button>
-            <button class="lay-btn" data-layout="3" onclick="fsLayout(this)">
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:5px;font-weight:600;">3장</div>
+          <div class="lay-grid" style="margin-bottom:10px;">
+            <button class="lay-btn" data-layout="3top" onclick="fsLayout(this)" title="위 크게 + 아래 2개">
               <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
                 <div class="lc big" style="grid-column:span 2"></div><div class="lc"></div><div class="lc"></div>
               </div>
             </button>
-            <button class="lay-btn" data-layout="4" onclick="fsLayout(this)">
-              <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
-                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
-              </div>
-            </button>
-            <button class="lay-btn" data-layout="feature" onclick="fsLayout(this)">
+            <button class="lay-btn" data-layout="3left" onclick="fsLayout(this)" title="왼쪽 크게 + 오른쪽 2개">
               <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
                 <div class="lc big" style="grid-row:span 2"></div><div class="lc"></div><div class="lc"></div>
               </div>
             </button>
-            <button class="lay-btn" data-layout="strip" onclick="fsLayout(this)">
+            <button class="lay-btn" data-layout="strip" onclick="fsLayout(this)" title="3등분 가로">
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;width:100%;height:100%;">
                 <div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:5px;font-weight:600;">4장</div>
+          <div class="lay-grid" style="margin-bottom:10px;">
+            <button class="lay-btn" data-layout="4grid" onclick="fsLayout(this)" title="2x2 격자">
+              <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="4top" onclick="fsLayout(this)" title="위 크게 + 아래 3개">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:2fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc big" style="grid-column:span 3"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="4left" onclick="fsLayout(this)" title="왼쪽 크게 + 오른쪽 3개">
+              <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc big" style="grid-row:span 3"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:5px;font-weight:600;">5장</div>
+          <div class="lay-grid" style="margin-bottom:10px;">
+            <button class="lay-btn" data-layout="5top" onclick="fsLayout(this)" title="위 2개 + 아래 3개">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc" style="grid-column:span 1"></div><div class="lc" style="grid-column:span 2"></div>
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="5left" onclick="fsLayout(this)" title="왼쪽 크게 + 오른쪽 4개">
+              <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr 1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc big" style="grid-row:span 4"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:5px;font-weight:600;">6장</div>
+          <div class="lay-grid" style="margin-bottom:10px;">
+            <button class="lay-btn" data-layout="6grid" onclick="fsLayout(this)" title="2x3 격자">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="6top" onclick="fsLayout(this)" title="위 크게 + 아래 5개">
+              <div style="display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:2fr 1fr;gap:3px;width:100%;height:100%;">
+                <div class="lc big" style="grid-column:span 5"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+          </div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-bottom:5px;font-weight:600;">7–8장</div>
+          <div class="lay-grid" style="margin-bottom:10px;">
+            <button class="lay-btn" data-layout="7grid" onclick="fsLayout(this)" title="7장: 위 3 + 아래 4">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;width:100%;height:100%;">
+                <div class="lc" style="grid-column:span 1"></div><div class="lc" style="grid-column:span 2"></div><div class="lc" style="grid-column:span 1"></div>
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+              </div>
+            </button>
+            <button class="lay-btn" data-layout="8grid" onclick="fsLayout(this)" title="8장: 2x4 격자">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:2px;width:100%;height:100%;">
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
+                <div class="lc"></div><div class="lc"></div><div class="lc"></div><div class="lc"></div>
               </div>
             </button>
           </div>
@@ -680,14 +739,30 @@ function fsRatio(btn){document.querySelectorAll('[data-ratio]').forEach(b=>b.cla
 function fsAutoPreview(){if(fsPhotos.length>0)fsGenerate();}
 
 function fsSlots(W,H,g,pad){
+  const iw=W-2*pad, ih=H-2*pad; // inner width/height
   switch(fsLayoutSel){
-    case '2h':return[{x:pad,y:pad,w:(W-3*pad-g)/2,h:H-2*pad},{x:pad+(W-3*pad-g)/2+g+pad,y:pad,w:(W-3*pad-g)/2,h:H-2*pad}];
-    case '2v':return[{x:pad,y:pad,w:W-2*pad,h:(H-3*pad-g)/2},{x:pad,y:pad+(H-3*pad-g)/2+g+pad,w:W-2*pad,h:(H-3*pad-g)/2}];
-    case '3':{const th=(H-3*pad-g)*0.55,bh=H-3*pad-g-th,bw=(W-3*pad-g)/2;return[{x:pad,y:pad,w:W-2*pad,h:th},{x:pad,y:pad+th+g,w:bw,h:bh},{x:pad+bw+g,y:pad+th+g,w:bw,h:bh}];}
-    case '4':{const hw=(W-3*pad-g)/2,hh=(H-3*pad-g)/2;return[{x:pad,y:pad,w:hw,h:hh},{x:pad+hw+g,y:pad,w:hw,h:hh},{x:pad,y:pad+hh+g,w:hw,h:hh},{x:pad+hw+g,y:pad+hh+g,w:hw,h:hh}];}
-    case 'feature':{const fw=(W-3*pad-g)*0.6,sw=W-3*pad-g-fw,sh=(H-3*pad-g)/2;return[{x:pad,y:pad,w:fw,h:H-2*pad},{x:pad+fw+g,y:pad,w:sw,h:sh},{x:pad+fw+g,y:pad+sh+g,w:sw,h:sh}];}
-    case 'strip':{const sw=(W-4*pad-2*g)/3;return[{x:pad,y:pad,w:sw,h:H-2*pad},{x:pad+sw+g,y:pad,w:sw,h:H-2*pad},{x:pad+2*(sw+g),y:pad,w:sw,h:H-2*pad}];}
-    default:return[{x:pad,y:pad,w:W-2*pad,h:H-2*pad}];
+    // ── 2장
+    case '2h':{const cw=(iw-g)/2;return[{x:pad,y:pad,w:cw,h:ih},{x:pad+cw+g,y:pad,w:cw,h:ih}];}
+    case '2v':{const ch=(ih-g)/2;return[{x:pad,y:pad,w:iw,h:ch},{x:pad,y:pad+ch+g,w:iw,h:ch}];}
+    // ── 3장
+    case '3top':{const th=ih*0.58,bh=ih-th-g,bw=(iw-g)/2;return[{x:pad,y:pad,w:iw,h:th},{x:pad,y:pad+th+g,w:bw,h:bh},{x:pad+bw+g,y:pad+th+g,w:bw,h:bh}];}
+    case '3left':{const fw=iw*0.62,sw=iw-fw-g,sh=(ih-g)/2;return[{x:pad,y:pad,w:fw,h:ih},{x:pad+fw+g,y:pad,w:sw,h:sh},{x:pad+fw+g,y:pad+sh+g,w:sw,h:sh}];}
+    case 'strip':{const sw=(iw-2*g)/3;return[{x:pad,y:pad,w:sw,h:ih},{x:pad+sw+g,y:pad,w:sw,h:ih},{x:pad+sw*2+g*2,y:pad,w:sw,h:ih}];}
+    // ── 4장
+    case '4grid':{const hw=(iw-g)/2,hh=(ih-g)/2;return[{x:pad,y:pad,w:hw,h:hh},{x:pad+hw+g,y:pad,w:hw,h:hh},{x:pad,y:pad+hh+g,w:hw,h:hh},{x:pad+hw+g,y:pad+hh+g,w:hw,h:hh}];}
+    case '4top':{const th=ih*0.55,bh=ih-th-g,bw=(iw-2*g)/3;return[{x:pad,y:pad,w:iw,h:th},{x:pad,y:pad+th+g,w:bw,h:bh},{x:pad+bw+g,y:pad+th+g,w:bw,h:bh},{x:pad+bw*2+g*2,y:pad+th+g,w:bw,h:bh}];}
+    case '4left':{const fw=iw*0.62,sw=iw-fw-g,sh=(ih-2*g)/3;return[{x:pad,y:pad,w:fw,h:ih},{x:pad+fw+g,y:pad,w:sw,h:sh},{x:pad+fw+g,y:pad+sh+g,w:sw,h:sh},{x:pad+fw+g,y:pad+sh*2+g*2,w:sw,h:sh}];}
+    // ── 5장
+    case '5top':{const rh=(ih-g)/2,bw=(iw-2*g)/3,tw=(iw-g)/2;return[{x:pad,y:pad,w:tw,h:rh},{x:pad+tw+g,y:pad,w:tw,h:rh},{x:pad,y:pad+rh+g,w:bw,h:rh},{x:pad+bw+g,y:pad+rh+g,w:bw,h:rh},{x:pad+bw*2+g*2,y:pad+rh+g,w:bw,h:rh}];}
+    case '5left':{const fw=iw*0.62,sw=iw-fw-g,sh=(ih-3*g)/4;return[{x:pad,y:pad,w:fw,h:ih},{x:pad+fw+g,y:pad,w:sw,h:sh},{x:pad+fw+g,y:pad+sh+g,w:sw,h:sh},{x:pad+fw+g,y:pad+sh*2+g*2,w:sw,h:sh},{x:pad+fw+g,y:pad+sh*3+g*3,w:sw,h:sh}];}
+    // ── 6장
+    case '6grid':{const cw=(iw-2*g)/3,ch=(ih-g)/2;return[{x:pad,y:pad,w:cw,h:ch},{x:pad+cw+g,y:pad,w:cw,h:ch},{x:pad+cw*2+g*2,y:pad,w:cw,h:ch},{x:pad,y:pad+ch+g,w:cw,h:ch},{x:pad+cw+g,y:pad+ch+g,w:cw,h:ch},{x:pad+cw*2+g*2,y:pad+ch+g,w:cw,h:ch}];}
+    case '6top':{const th=ih*0.52,bh=ih-th-g,bw=(iw-4*g)/5;return[{x:pad,y:pad,w:iw,h:th},...[0,1,2,3,4].map(i=>({x:pad+i*(bw+g),y:pad+th+g,w:bw,h:bh}))];}
+    // ── 7장
+    case '7grid':{const rh=(ih-g)/2,tw=(iw-2*g)/3,bw=(iw-3*g)/4;return[{x:pad,y:pad,w:tw,h:rh},{x:pad+tw+g,y:pad,w:tw,h:rh},{x:pad+tw*2+g*2,y:pad,w:tw,h:rh},{x:pad,y:pad+rh+g,w:bw,h:rh},{x:pad+bw+g,y:pad+rh+g,w:bw,h:rh},{x:pad+bw*2+g*2,y:pad+rh+g,w:bw,h:rh},{x:pad+bw*3+g*3,y:pad+rh+g,w:bw,h:rh}];}
+    // ── 8장
+    case '8grid':{const cw=(iw-3*g)/4,ch=(ih-g)/2;return[0,1,2,3].map(i=>({x:pad+i*(cw+g),y:pad,w:cw,h:ch})).concat([0,1,2,3].map(i=>({x:pad+i*(cw+g),y:pad+ch+g,w:cw,h:ch})));}
+    default:return[{x:pad,y:pad,w:iw,h:ih}];
   }
 }
 function fsDraw(ctx,img,x,y,w,h){const ia=img.width/img.height,sa=w/h;let sx,sy,sw,sh;if(ia>sa){sh=img.height;sw=sh*sa;sx=(img.width-sw)/2;sy=0;}else{sw=img.width;sh=sw/sa;sx=0;sy=(img.height-sh)/2;}ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);ctx.restore();}
