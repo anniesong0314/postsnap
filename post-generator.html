@@ -808,6 +808,7 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
     const rmBtn = document.getElementById('removeImgBtn');
     rmBtn.style.display = 'flex';
     // API 전송용 리사이즈 (최대 1024px) - 미리보기는 원본 유지
+    window._psImagePhotoCnt = null; // 단일 이미지 업로드 시 리셋
     resizeImageForAPI(origUrl, 1024, 0.82, (data, type) => {
       psImage = data; psImageType = type;
       saveState();
@@ -888,28 +889,7 @@ async function generatePost() {
   });
   prompt+=`\n각 섹션은 [BLOG], [LINKEDIN], [YOUTUBE], [INSTAGRAM], [X] 태그로 구분해주세요.`;
 
-  // 이미지 배치 추천: psImage가 있을 때만 추가 (같은 호출, 추가비용 없음)
-  if(psImage) {
-    prompt += `\n\n[IMAGE_PLAN]
-사진 속에 여러 장의 사진이 콜라주 형태로 있을 수 있습니다. 사진 번호는 왼쪽 위부터 가로 방향으로 순서대로 1, 2, 3... 으로 셉니다 (두 번째 줄 첫 번째 = 한 줄에 사진이 N개라면 N+1번).
-
-아래 형식을 정확히 따라 이미지 배치 계획을 작성하세요:
-- 글의 각 문단 사이에 {사진N과 사진M의 콜라주} 또는 {사진N 단독} 형식으로 삽입 지시를 넣어주세요
-- 이미지 삽입 지시는 문단과 문단 사이 빈 줄에 단독으로 배치
-- 예시:
-  도입 문단 텍스트...
-
-  {사진1과 사진2의 콜라주}
-
-  두 번째 문단 텍스트...
-
-  {사진5 단독}
-
-- 첨부 이미지 5장당 최소 2~3개의 {콜라주} 삽입 지시 포함
-- 품질이 낮거나 중복되는 사진은 제외하고 번호 언급
-- 반드시 한국어로 작성
-[/IMAGE_PLAN]`;
-  }
+  // IMAGE_PLAN은 글 완성 후 별도 호출 (generateImagePlan)
   const {iv,fill}=animateProgress();
   try {
     const messages=[];
@@ -2064,7 +2044,7 @@ async function cgStartEdit(id) {
 
   // 선택한 임시저장 이미지를 미리보기로 불러오기
   const items = cgLoad();
-  const item = items.find(i => i.id === id);
+  let item = items.find(i => i.id === id);
   if (!item) return;
 
   // 원본 사진들을 별도 key에서 로드
@@ -2253,9 +2233,10 @@ function fsDownload(){
 function useInPostSnap(){
   if(!fsDataUrl)return;
   // fsDataUrl을 항상 JPEG로 변환 후 세팅
-resizeImageForAPI('data:image/png;base64,' + (fsDataUrl.includes(',') ? fsDataUrl.split(',')[1] : fsDataUrl), 1024, 0.82, (data, type) => {
-  psImage = data; psImageType = 'image/jpeg';
-}); psImageType='image/jpeg';
+  window._psImagePhotoCnt = fsPhotos.length || null; // 원본 사진 수 전달
+  resizeImageForAPI('data:image/png;base64,' + (fsDataUrl.includes(',') ? fsDataUrl.split(',')[1] : fsDataUrl), 1024, 0.82, (data, type) => {
+    psImage = data; psImageType = 'image/jpeg';
+  });
   const img=document.getElementById('preview-img');
   img.src=fsDataUrl;img.style.display='block';
   document.querySelector('.upload-icon').style.display='none';
@@ -2579,25 +2560,26 @@ async function generateImagePlan(imgData, imgType, generatedOutput, mainPlatform
   planContent.innerHTML = '<span style="color:var(--muted);font-size:0.78rem;">🖼️ 이미지 배치 분석 중...</span>';
 
   const genText = Object.values(generatedOutput).find(v => v) || '';
-  const prompt = `아래 글과 사진을 보고 이미지 삽입 위치를 추천해주세요.
+  // psImagePhotoCnt: 원본 패널에 올라간 사진 수 (없으면 추정)
+  const photoCnt = window._psImagePhotoCnt || '여러';
+  const prompt = `이 이미지는 총 ${photoCnt}장의 사진이 콜라주된 이미지입니다.
+사진 번호 규칙: 왼쪽 위부터 가로 방향으로 1, 2, 3... 순서. 두 번째 줄 첫 번째 = 한 줄 개수+1번.
+모든 사진 번호는 1부터 ${photoCnt}까지 존재합니다.
 
-글 내용 (일부):
-${genText.slice(0, 400)}
+아래 글의 문단 사이에 어떤 사진들을 넣으면 좋을지 추천해주세요.
+반드시 {사진N과 사진M의 콜라주} 또는 {사진N 단독} 형식만 사용하세요.
+각 문단 뒤에 하나씩, 총 글 문단 수만큼 제안하세요.
 
-사진 번호 규칙: 왼쪽 위부터 가로 방향으로 1, 2, 3... (두 번째 줄 첫 번째 = N+1번)
-
-글의 각 문단 사이에 {사진N과 사진M의 콜라주} 또는 {사진N 단독} 형식으로만 답해주세요. 추가 설명 없이 삽입 위치만 간결하게. 예시:
-도입 문단 뒤에: {사진1과 사진3의 콜라주}
-두 번째 문단 뒤에: {사진5 단독}
-마지막 문단 뒤에: {사진2와 사진7의 콜라주}`;
+글:
+${genText.slice(0, 800)}`;
 
   try {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001', // 저렴한 모델 사용
-        max_tokens: 400,
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
         messages: [{
           role: 'user',
           content: [
