@@ -141,11 +141,11 @@
   .bg-sw { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; flex-shrink: 0; }
   .bg-sw.active { border-color: var(--accent); transform: scale(1.15); }
 
-  .fs-gen-btn { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-  .fs-gen-btn:hover { background: #a84d20; transform: translateY(-1px); }
+  .fs-gen-btn { width: 100%; padding: 13px; background: transparent; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .fs-gen-btn:hover { background: var(--accent-light); transform: translateY(-1px); }
 
-  .use-btn { width: 100%; margin-top: 10px; padding: 11px; background: transparent; border: 1.5px solid var(--cream); border-radius: 10px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; display: none; }
-  .use-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .use-btn { width: 100%; margin-top: 10px; padding: 11px; background: var(--accent); border: none; border-radius: 10px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: none; }
+  .use-btn:hover { background: #a84d20; transform: translateY(-1px); }
   .use-btn.show { display: block; }
 
   .cv-wrap { background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; }
@@ -534,8 +534,8 @@
         </div>
       </div>
 
-      <button class="fs-gen-btn" onclick="fsGenerateAndSave()">✦ 콜라주 만들기</button>
-      <button class="use-btn" id="useBtn" onclick="useInPostSnap()">📝 이 콜라주로 PostSnap에서 글 쓰기 →</button>
+      <button class="use-btn show" id="saveColBtn" onclick="fsGenerateAndSave()">🖼️ 콜라주 임시저장하기</button>
+      <button class="fs-gen-btn" id="useBtn" onclick="useInPostSnap()" style="display:none;margin-top:10px;">📝 이 콜라주로 PostSnap에서 글 쓰기 →</button>
       </div><!-- /left col -->
 
     <div class="cv-wrap">
@@ -957,7 +957,7 @@ async function generatePost() {
       psImagePlan = ''; // 초기화
       showOutput(); saveState();
       // 이미지 배치 추천은 별도로 비동기 호출 (글 표시 막지 않음)
-      if (psImage) setTimeout(() => generateImagePlan(psImage, psImageType, psOutput, platforms[0]), 300);
+      if (psImage) setTimeout(() => generateImagePlan(psImage, 'image/jpeg', psOutput, platforms[0]), 300);
     },400);
   } catch(err) {
     clearInterval(iv);
@@ -1062,7 +1062,7 @@ function fsClearAllPhotos(){
   document.getElementById('collageCanvas').style.display='none';
   document.getElementById('cvPh').style.display='block';
   document.getElementById('dlBtn').classList.remove('show');
-  document.getElementById('useBtn').classList.remove('show');
+  const _ub2 = document.getElementById('useBtn'); if(_ub2) _ub2.style.display='none';
   document.getElementById('editToolbar').classList.remove('visible');
   fsDataUrl=null;
 }
@@ -2122,7 +2122,7 @@ function fsGenerate(){
   document.getElementById('cvPh').style.display='none';
   canvas.style.display='block';
   document.getElementById('dlBtn').classList.add('show');
-  document.getElementById('useBtn').classList.add('show');
+  const _ub = document.getElementById('useBtn'); if(_ub) _ub.style.display='block';
   document.getElementById('editToolbar').classList.add('visible');
   const _ccb = document.getElementById('clearCanvasBtn'); if(_ccb) _ccb.style.display='block';
   const _czb = document.getElementById('cvZoomBtn'); if(_czb) _czb.style.display='block';
@@ -2143,7 +2143,7 @@ function fsClearCanvas() {
   if (canvas) { canvas.style.display = 'none'; const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height); }
   document.getElementById('cvPh').style.display = 'flex';
   document.getElementById('dlBtn').classList.remove('show');
-  document.getElementById('useBtn').classList.remove('show');
+  const _ub2 = document.getElementById('useBtn'); if(_ub2) _ub2.style.display='none';
   document.getElementById('editToolbar').classList.remove('visible');
   document.getElementById('clearCanvasBtn').style.display = 'none';
   const _czb2 = document.getElementById('cvZoomBtn'); if(_czb2) _czb2.style.display='none';
@@ -2157,14 +2157,17 @@ function fsClearCanvas() {
 }
 
 function fsGenerateAndSave() {
-  fsGenerate();
-  // 갤러리에 1회만 저장 (버튼 클릭 시에만)
-  setTimeout(() => {
-    const canvas = document.getElementById('collageCanvas');
-    if (canvas && canvas.style.display !== 'none') {
-      cgAddItem(canvas.toDataURL('image/png'));
-    }
-  }, 120);
+  const canvas = document.getElementById('collageCanvas');
+  if (!canvas || canvas.style.display === 'none') {
+    // 콜라주가 없으면 먼저 생성
+    if (fsPhotos.length === 0) { alert('사진을 먼저 드래그해서 넣어주세요 😊'); return; }
+    fsGenerate();
+    setTimeout(() => cgAddItem(document.getElementById('collageCanvas').toDataURL('image/png')), 200);
+    return;
+  }
+  // 현재 캔버스 상태 그대로 저장 (워터마크/모자이크 포함)
+  cgAddItem(canvas.toDataURL('image/png'));
+  showToast('✓ 콜라주가 임시저장됐어요!', 2000);
 }
 function fsDownload(){
   const canvas=document.getElementById('collageCanvas');
@@ -2176,7 +2179,10 @@ function fsDownload(){
 
 function useInPostSnap(){
   if(!fsDataUrl)return;
-  psImage=fsDataUrl.split(',')[1]; psImageType='image/jpeg';
+  // fsDataUrl을 항상 JPEG로 변환 후 세팅
+resizeImageForAPI('data:image/png;base64,' + (fsDataUrl.includes(',') ? fsDataUrl.split(',')[1] : fsDataUrl), 1024, 0.82, (data, type) => {
+  psImage = data; psImageType = 'image/jpeg';
+}); psImageType='image/jpeg';
   const img=document.getElementById('preview-img');
   img.src=fsDataUrl;img.style.display='block';
   document.querySelector('.upload-icon').style.display='none';
