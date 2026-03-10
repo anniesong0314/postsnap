@@ -153,7 +153,7 @@
   .dl-btn { padding: 7px 16px; background: transparent; border: 1.5px solid var(--accent); border-radius: 7px; color: var(--accent); font-size: 0.78rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; display: none; }
   .dl-btn:hover { background: var(--accent); color: #fff; }
   .dl-btn.show { display: block; }
-  .cv-body { padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 460px; }
+  .cv-body { padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 400px; overflow: auto; }
   #collageCanvas { max-width: 100%; border-radius: 8px; display: none; box-shadow: 0 4px 24px rgba(0,0,0,0.1); }
   .cv-ph { text-align: center; color: var(--muted); }
   .cv-ph .ph-icon { font-size: 2.8rem; display: block; margin-bottom: 10px; opacity: 0.3; }
@@ -356,6 +356,13 @@
         <div class="cv-title">미리보기</div>
         <button class="dl-btn" id="dlBtn" onclick="fsDownload()">⬇ 저장하기</button>
       </div>
+      <div class="cv-body">
+        <div class="cv-ph" id="cvPh">
+          <span class="ph-icon">🖼️</span>
+          <p>사진을 올리고<br>레이아웃을 골라서<br>콜라주를 만들어보세요</p>
+        </div>
+        <canvas id="collageCanvas" style="cursor:crosshair;max-width:100%;"></canvas>
+      </div>
       <div class="edit-toolbar" id="editToolbar">
         <button class="tool-btn active" id="toolMosaic" onclick="setTool('mosaic')">🔲 모자이크</button>
         <button class="tool-btn" id="toolNone" onclick="setTool('none')">↖ 선택 안 함</button>
@@ -366,13 +373,6 @@
         <div class="tool-sep"></div>
         <button class="tool-btn" onclick="fsUndoMosaic()" title="되돌리기">↩ 되돌리기</button>
         <button class="tool-btn" onclick="fsClearMosaic()" style="color:#c0392b;border-color:#f0c0bb;">✕ 초기화</button>
-      </div>
-      <div class="cv-body">
-        <div class="cv-ph" id="cvPh">
-          <span class="ph-icon">🖼️</span>
-          <p>사진을 올리고<br>레이아웃을 골라서<br>콜라주를 만들어보세요</p>
-        </div>
-        <canvas id="collageCanvas" style="cursor:crosshair;"></canvas>
       </div>
     </div>
   </div>
