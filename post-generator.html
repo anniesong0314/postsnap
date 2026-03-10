@@ -1775,32 +1775,94 @@ function cgSave(items) {
 }
 
 function cgAddItem(dataUrl) {
-  // PNG → JPEG 압축으로 localStorage 절약
-  const compress = (url, cb) => {
+  // 콜라주 이미지 압축 (JPEG 72%)
+  const compressImg = (url, maxPx, q, cb) => {
     const img = new Image();
     img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
       const c = document.createElement('canvas');
-      c.width = img.width; c.height = img.height;
-      c.getContext('2d').drawImage(img, 0, 0);
-      cb(c.toDataURL('image/jpeg', 0.72));
+      c.width = Math.round(img.width*scale); c.height = Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      cb(c.toDataURL('image/jpeg', q));
     };
     img.src = url;
   };
-  compress(dataUrl, (compressed) => {
-    const items = cgLoad();
+
+  compressImg(dataUrl, 1080, 0.72, (compressed) => {
     const id = Date.now();
-    // 원본 사진 srcs도 함께 저장 (수정 시 재사용)
-    const origSrcs = fsPhotos.map(p => p.src);
-    const origLayout = fsLayoutSel;
-    const origGap = fsGapSel;
-    const origBg = fsBgSel;
-    const origRatio = fsRatioSel;
-    items.unshift({ id, dataUrl: compressed, date: new Date().toISOString().slice(0,10),
-      origSrcs, origLayout, origGap, origBg, origRatio });
-    if (items.length > 60) items.splice(60);
-    cgSave(items);
-    cgRender();
-    srcPanelRender(); // 원본 패널도 갱신
+    const meta = {
+      id,
+      dataUrl: compressed,
+      date: new Date().toISOString().slice(0,10),
+      origLayout: fsLayoutSel,
+      origGap: fsGapSel,
+      origBg: fsBgSel,
+      origRatio: fsRatioSel
+      // origSrcs는 별도 key로 저장
+    };
+
+    // origSrcs: 각 이미지를 300px 썸네일로 압축해서 별도 저장
+    const origPhotos = fsPhotos.slice();
+    let pending = origPhotos.length;
+    const compressedSrcs = new Array(origPhotos.length);
+
+    const saveAll = () => {
+      // 1. 원본 사진 별도 key에 저장 시도
+      try {
+        localStorage.setItem('fs_orig_' + id, JSON.stringify({
+          srcs: compressedSrcs,
+          layout: fsLayoutSel, gap: fsGapSel, bg: fsBgSel, ratio: fsRatioSel
+        }));
+      } catch(e) {
+        // 원본 저장 실패 → 무시 (콜라주 자체 저장은 계속)
+        console.warn('origSrcs save failed (space):', e.message);
+      }
+
+      // 2. 갤러리 리스트 저장
+      const items = cgLoad();
+      items.unshift(meta);
+      if (items.length > 60) {
+        // 오래된 항목의 origSrcs도 삭제
+        const removed = items.splice(60);
+        removed.forEach(it => { try { localStorage.removeItem('fs_orig_' + it.id); } catch{} });
+      }
+
+      // cgSave 실패 시 origSrcs 정리 후 재시도
+      try {
+        localStorage.setItem(CG_KEY, JSON.stringify(items));
+        cgHistPush();
+      } catch(e) {
+        // 공간 부족 → 오래된 origSrcs 정리 후 재시도
+        console.warn('Gallery save failed, cleaning origSrcs...', e);
+        try {
+          // origSrcs 전체 삭제
+          Object.keys(localStorage).filter(k => k.startsWith('fs_orig_')).forEach(k => localStorage.removeItem(k));
+          localStorage.setItem(CG_KEY, JSON.stringify(items));
+          cgHistPush();
+        } catch(e2) {
+          // 그래도 안되면 가장 오래된 5개 제거
+          items.splice(-5);
+          try { localStorage.setItem(CG_KEY, JSON.stringify(items)); cgHistPush(); } catch(e3) {
+            showToast('⚠️ 저장 공간이 부족해요. 오래된 콜라주를 삭제해주세요.', 4000);
+            return;
+          }
+        }
+      }
+      cgRender();
+      srcPanelRender();
+    };
+
+    if (origPhotos.length === 0) {
+      saveAll();
+    } else {
+      origPhotos.forEach((p, i) => {
+        compressImg(p.src, 300, 0.65, (thumb) => {
+          compressedSrcs[i] = thumb;
+          pending--;
+          if (pending === 0) saveAll();
+        });
+      });
+    }
   });
 }
 
@@ -2005,8 +2067,19 @@ async function cgStartEdit(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
 
-  // 원본 사진들이 저장되어 있으면 복원해서 제대로 수정 가능하도록
-  const hasSrcs = item.origSrcs && item.origSrcs.length > 0;
+  // 원본 사진들을 별도 key에서 로드
+  let _origData = null;
+  try { _origData = JSON.parse(localStorage.getItem('fs_orig_' + item.id)); } catch{}
+  const hasSrcs = _origData && _origData.srcs && _origData.srcs.length > 0;
+  if (hasSrcs) {
+    item = { ...item,
+      origSrcs: _origData.srcs,
+      origLayout: _origData.layout || item.origLayout,
+      origGap: _origData.gap ?? item.origGap,
+      origBg: _origData.bg || item.origBg,
+      origRatio: _origData.ratio || item.origRatio
+    };
+  }
 
   if (hasSrcs) {
     // 옵션 복원
