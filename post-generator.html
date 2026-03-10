@@ -108,10 +108,8 @@
     max-width: 1100px; margin: 0 auto; padding: 24px 24px 32px;
     display: flex; flex-direction: column; gap: 20px;
   }
-  .fs-work-row {
-    display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start;
-  }
-  @media (max-width: 800px) { .fs-work-row { grid-template-columns: 1fr; } }
+  .fs-work-row { display:grid; grid-template-columns:200px 1fr minmax(280px,1.4fr); gap:16px; align-items:start; }
+  @media (max-width: 800px) { .fs-work-row { display:grid; grid-template-columns:200px 1fr minmax(280px,1.4fr); gap:16px; align-items:start; } }
 
   .fs-card { background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
   .fs-card-hd { padding: 14px 18px; border-bottom: 1px solid var(--cream); display: flex; align-items: center; gap: 10px; background: var(--paper); }
@@ -255,6 +253,28 @@
     font-family:'DM Sans',sans-serif;
   }
   .img-plan-badge:hover { background:#a84d20; transform:scale(1.04); }
+
+  /* 원본 이미지 패널 */
+  #srcPanel { min-width:160px; max-width:200px; }
+  .src-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; padding:4px 0; }
+  .src-item { position:relative; border-radius:8px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color 0.15s; background:var(--cream); }
+  .src-item:hover { border-color:var(--accent); }
+  .src-item.liked-src .src-heart { opacity:1 !important; }
+  .src-item img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+  .src-num { position:absolute; top:3px; left:4px; font-size:0.62rem; font-weight:700; color:#fff; background:rgba(0,0,0,0.55); border-radius:4px; padding:1px 4px; pointer-events:none; }
+  .src-del { position:absolute; top:3px; right:3px; background:rgba(0,0,0,0.55); border:none; color:#fff; font-size:0.6rem; border-radius:50%; width:16px; height:16px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:2; }
+  .src-item:hover .src-del { display:flex; }
+  .src-chk { position:absolute; top:3px; right:22px; background:rgba(255,255,255,0.9); border:1.5px solid #ccc; border-radius:50%; width:15px; height:15px; cursor:pointer; display:none; align-items:center; justify-content:center; font-size:0.55rem; z-index:2; }
+  .src-item:hover .src-chk,
+  .src-item.src-selected .src-chk { display:flex; }
+  .src-item.src-selected .src-chk { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .src-heart { position:absolute; bottom:4px; left:5px; background:none; border:none; cursor:pointer; opacity:0; transition:opacity 0.15s; padding:0; line-height:1; }
+  .src-item:hover .src-heart { opacity:1; }
+  .src-heart.liked { opacity:1 !important; }
+  .src-bar { display:none; position:sticky; bottom:0; background:var(--paper); border-top:1px solid var(--cream); padding:6px 4px; gap:6px; }
+  .src-bar.show { display:flex; }
+  .src-bar-btn { flex:1; padding:5px 0; border:1.5px solid var(--cream); border-radius:7px; background:none; font-size:0.7rem; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; color:var(--muted); }
+  .src-bar-btn.danger { color:#c0392b; border-color:#f0c0bb; }
 </style>
 </head>
 <body>
@@ -405,15 +425,32 @@
             <input type="range" class="cg-size-slider" id="cgSizeSlider" min="80" max="280" value="140" oninput="cgResize(this.value)">
             <button class="cg-dl-btn" id="cgDlBtn" onclick="cgDownloadSelected()">⬇ 선택 내려받기</button>
             <button class="cg-fit-btn" onclick="cgSelectAll()" style="border-color:var(--accent);color:var(--accent);">전체선택</button>
-            <button class="cg-fit-btn" onclick="cgDeselectAll()">해제</button>
+            <button class="cg-fit-btn" onclick="cgDeselectAll()">전체해제</button>
           </div>
         </div>
         <div class="cg-grid" id="cgGrid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));"></div>
         <div class="cg-empty" id="cgEmpty">임시저장된 콜라주가 없어요.<br>콜라주를 만들면 여기에 자동 저장돼요 🖼️</div>
     </div>
 
-    <!-- ② 작업 영역 (2컬럼) -->
+    <!-- ② 작업 영역 (3컬럼) -->
     <div class="fs-work-row">
+
+      <!-- 컬럼1: 원본 이미지 패널 -->
+      <div id="srcPanel" class="fs-card" style="display:flex;flex-direction:column;max-height:600px;">
+        <div class="fs-card-hd" style="flex-shrink:0;">
+          <div class="panel-title">원본 이미지 <span id="srcCount" style="font-size:0.72rem;color:var(--muted);font-weight:400;"></span></div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:0 4px 4px;">
+          <div class="src-grid" id="srcGrid"></div>
+          <div id="srcEmpty" style="font-size:0.75rem;color:var(--muted);text-align:center;padding:20px 8px;">미리보기에 사진을<br>드래그하면 여기에<br>표시돼요</div>
+        </div>
+        <div class="src-bar" id="srcBar">
+          <button class="src-bar-btn danger" onclick="srcDeleteSelected()">삭제</button>
+          <button class="src-bar-btn" onclick="srcDeselectAll()">선택해제</button>
+        </div>
+      </div>
+
+      <!-- 컬럼2: 레이아웃&옵션 + 버튼 -->
       <div>
       <!-- 숨겨진 파일 입력 (교체용) -->
       <input type="file" id="fsInput" accept="image/*" multiple style="display:none">
@@ -520,7 +557,7 @@
         <span class="brush-label">모자이크</span>
         <button class="tool-btn active" id="toolRect" onclick="setTool('rect')" title="사각형 영역 드래그">▭ 사각형</button>
         <button class="tool-btn" id="toolEllipse" onclick="setTool('ellipse')" title="원형 영역 드래그">◯ 원형</button>
-        <button class="tool-btn" id="toolNone" onclick="setTool('none')" title="선택 해제">↖ 편집</button>
+        <button class="tool-btn" id="toolNone" onclick="setTool('none')" title="모자이크 영역 선택/이동 모드">↖ 선택</button>
         <div class="tool-sep"></div>
         <button class="tool-btn" onclick="fsClearMosaic()" style="color:#c0392b;border-color:#f0c0bb;">✕ 전체삭제</button>
         <div class="tool-sep"></div>
@@ -893,7 +930,7 @@ document.getElementById('fsInput').addEventListener('change', function(e) {
       img.onload = () => {
         fsPhotos.push({src: ev.target.result, img, type: file.type});
         loaded++;
-        if (loaded === files.length) { fsThumbs(); fsAutoPreview(); }
+        if (loaded === files.length) { fsThumbs(); srcPanelRender(); fsAutoPreview(); }
       };
       img.src = ev.target.result;
     };
@@ -918,7 +955,7 @@ function cvPhDrop(e) {
       img.onload = () => {
         fsPhotos.push({src: ev.target.result, img, type: file.type});
         loaded++;
-        if (loaded === files.length) { fsThumbs(); fsAutoPreview(); }
+        if (loaded === files.length) { fsThumbs(); srcPanelRender(); fsAutoPreview(); }
       };
       img.src = ev.target.result;
     };
@@ -931,16 +968,13 @@ function fsThumbs(){
   document.getElementById('fsCount').textContent=fsPhotos.length>0?`${fsPhotos.length}장 선택됨`:'';
   const clearBtn = document.getElementById('fsClearAllBtn');
   if (clearBtn) clearBtn.style.display = fsPhotos.length > 1 ? 'block' : 'none';
-  // 사진 장수 자동 감지 & 업데이트
   if (fsPhotos.length >= 2) {
     const inp = document.getElementById('fsCountInput');
-    if (inp) {
-      inp.value = fsPhotos.length;
-      fsOnCountInput(fsPhotos.length);
-    }
+    if (inp) { inp.value = fsPhotos.length; fsOnCountInput(fsPhotos.length); }
   }
+  srcPanelRender();
 }
-function fsRm(i){fsPhotos.splice(i,1);fsThumbs();}
+function fsRm(i){fsPhotos.splice(i,1);fsThumbs();srcPanelRender();}
 function fsClearAllPhotos(){
   if(!confirm('사진을 모두 삭제할까요?')) return;
   fsPhotos=[];
@@ -1394,6 +1428,96 @@ document.addEventListener('keydown', e => {
   }
 }, true); // capture: true → 다른 핸들러보다 먼저 실행
 
+
+// ── 원본 이미지 패널 ────────────────────────────────
+let srcSelected = new Set();
+let srcLikes = new Set(); // 원본 이미지 하트
+
+function srcPanelRender() {
+  const grid = document.getElementById('srcGrid');
+  const empty = document.getElementById('srcEmpty');
+  const bar = document.getElementById('srcBar');
+  const countEl = document.getElementById('srcCount');
+  if (!grid) return;
+
+  if (fsPhotos.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    bar.classList.remove('show');
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+  empty.style.display = 'none';
+  if (countEl) countEl.textContent = `총 ${fsPhotos.length}장`;
+
+  grid.innerHTML = fsPhotos.map((p, i) => {
+    const sel = srcSelected.has(i);
+    const liked = srcLikes.has(i);
+    return `<div class="src-item${sel ? ' src-selected' : ''}" data-idx="${i}">
+      <img src="${p.src}" loading="lazy">
+      <span class="src-num">${i+1}</span>
+      <button class="src-chk" onclick="srcToggleSelect(${i}, event)">${sel ? '✓' : ''}</button>
+      <button class="src-del" onclick="srcDeleteOne(${i}, event)" title="삭제">✕</button>
+      <button class="src-heart${liked?' liked':''}" onclick="srcToggleLike(${i},event)" title="하트">
+        <svg width="12" height="12" viewBox="0 0 24 24">
+          <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.518 3.378 1 6.5 1c1.95 0 3.764 1.077 4.5 2.796C11.737 2.077 13.55 1 15.5 1 18.622 1 21 3.518 21 7.191c0 4.105-5.37 8.863-11 14.402z"
+            fill="${liked ? '#e74c3c' : 'none'}" stroke="${liked ? '#e74c3c' : 'rgba(255,255,255,0.9)'}" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>`;
+  }).join('');
+
+  // hover 시 미리보기 하이라이트 등
+  grid.querySelectorAll('.src-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.src-chk') || e.target.closest('.src-del') || e.target.closest('.src-heart')) return;
+      // 클릭 시 선택 토글
+      srcToggleSelect(parseInt(el.dataset.idx), e);
+    });
+  });
+
+  bar.classList.toggle('show', srcSelected.size > 0);
+}
+
+function srcToggleSelect(idx, e) {
+  e.stopPropagation();
+  if (srcSelected.has(idx)) srcSelected.delete(idx);
+  else srcSelected.add(idx);
+  srcPanelRender();
+}
+
+function srcDeselectAll() {
+  srcSelected.clear();
+  srcPanelRender();
+}
+
+function srcDeleteOne(idx, e) {
+  e.stopPropagation();
+  fsPhotos.splice(idx, 1);
+  srcSelected.clear();
+  fsThumbs();
+  srcPanelRender();
+  if (fsPhotos.length > 0) fsAutoPreview();
+  else fsClearCanvas();
+}
+
+function srcDeleteSelected() {
+  const toDelete = [...srcSelected].sort((a,b) => b-a); // 뒤에서부터 삭제
+  toDelete.forEach(i => fsPhotos.splice(i, 1));
+  srcSelected.clear();
+  fsThumbs();
+  srcPanelRender();
+  if (fsPhotos.length > 0) fsAutoPreview();
+  else fsClearCanvas();
+}
+
+function srcToggleLike(idx, e) {
+  e.stopPropagation();
+  if (srcLikes.has(idx)) srcLikes.delete(idx);
+  else srcLikes.add(idx);
+  srcPanelRender();
+}
+
 // ── COLLAGE GALLERY ───────────────────────────────────
 // localStorage key: 'cg_items' → [{id, dataUrl, date}]
 const CG_KEY = 'framesnap_gallery';
@@ -1440,13 +1564,18 @@ function cgAddItem(dataUrl) {
   compress(dataUrl, (compressed) => {
     const items = cgLoad();
     const id = Date.now();
-    const dateStr = new Date().toLocaleDateString('ko-KR', {month:'long',day:'numeric'}).replace(/ /g,'').replace('일','').replace('월','월 ');
-    // 앞에 추가 (최신이 먼저)
-    items.unshift({ id, dataUrl: compressed, date: new Date().toISOString().slice(0,10) });
-    // 최대 60개 유지
+    // 원본 사진 srcs도 함께 저장 (수정 시 재사용)
+    const origSrcs = fsPhotos.map(p => p.src);
+    const origLayout = fsLayoutSel;
+    const origGap = fsGapSel;
+    const origBg = fsBgSel;
+    const origRatio = fsRatioSel;
+    items.unshift({ id, dataUrl: compressed, date: new Date().toISOString().slice(0,10),
+      origSrcs, origLayout, origGap, origBg, origRatio });
     if (items.length > 60) items.splice(60);
     cgSave(items);
     cgRender();
+    srcPanelRender(); // 원본 패널도 갱신
   });
 }
 
@@ -1651,37 +1780,75 @@ async function cgStartEdit(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
 
-  // dataUrl을 캔버스에 직접 표시 (fsPhotos는 단일 원본 이미지로 세팅)
-  const img = new Image();
-  img.onload = () => {
-    // 캔버스를 이미지 원본 크기로 맞춰 직접 렌더 (레이아웃 재계산 없이)
-    const c = document.getElementById('collageCanvas');
-    c.width = img.naturalWidth; c.height = img.naturalHeight;
-    c.getContext('2d').drawImage(img, 0, 0);
-    c.style.display = 'block';
-    // fsPhotos는 비워둠 (수정 모드: 레이아웃 자동재생성 방지)
+  // 원본 사진들이 저장되어 있으면 복원해서 제대로 수정 가능하도록
+  const hasSrcs = item.origSrcs && item.origSrcs.length > 0;
+
+  if (hasSrcs) {
+    // 옵션 복원
+    fsLayoutSel = item.origLayout || '2h';
+    fsGapSel = item.origGap ?? 0;
+    fsBgSel = item.origBg || '#ffffff';
+    fsRatioSel = item.origRatio || '1:1';
+
+    // UI 버튼 상태 복원
+    document.querySelectorAll('[data-gap]').forEach(b => b.classList.toggle('active', parseInt(b.dataset.gap) === fsGapSel));
+    document.querySelectorAll('[data-ratio]').forEach(b => b.classList.toggle('active', b.dataset.ratio === fsRatioSel));
+    document.querySelectorAll('.bg-sw').forEach(b => b.classList.toggle('active', b.dataset.bg === fsBgSel));
+
+    // 원본 사진들 로드
     fsPhotos = [];
-    fsThumbs();
-    // 내부 편집용: 이 이미지를 "편집 베이스"로 사용
-    _fsEditBase = { src: item.dataUrl, img };
-    document.getElementById('cvPh').style.display = 'none';
-    document.getElementById('dlBtn').classList.add('show');
-    document.getElementById('useBtn').classList.add('show');
-    document.getElementById('editToolbar').classList.add('visible');
-    const _ccb = document.getElementById('clearCanvasBtn'); if(_ccb) _ccb.style.display='block';
-    fsDataUrl = item.dataUrl;
-    _wmBaseDataUrl = null;
-    mosaicRegions = []; selectedRegionId = null;
-    const wmTog = document.getElementById('wmToggle');
-    if (wmTog) wmTog.checked = false;
-    setTimeout(renderMosaicOverlay, 50);
-    setTimeout(renderSlotOverlay, 60);
-    // FrameSnap 탭으로 이동 후 스크롤
-    const fsTab = document.querySelector('[onclick*="framesnap"]');
-    if (fsTab) fsTab.click();
-    setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'center'}), 150);
-  };
-  img.src = item.dataUrl;
+    let loaded = 0;
+    item.origSrcs.forEach(src => {
+      const img = new Image();
+      img.onload = () => {
+        fsPhotos.push({ src, img, type: 'image/jpeg' });
+        loaded++;
+        if (loaded === item.origSrcs.length) {
+          fsThumbs();
+          fsGenerate();
+          // 사진 장수 UI 업데이트
+          const inp = document.getElementById('fsCountInput');
+          if (inp) { inp.value = fsPhotos.length; fsOnCountInput(fsPhotos.length); }
+          // 레이아웃 버튼 선택 상태
+          document.querySelectorAll('[data-layout]').forEach(b => b.classList.toggle('active', b.dataset.layout === fsLayoutSel));
+          // FrameSnap 탭으로 이동
+          const fsTab = document.querySelector('[onclick*="framesnap"]');
+          if (fsTab) fsTab.click();
+          setTimeout(() => document.getElementById('collageCanvas').scrollIntoView({behavior:'smooth', block:'center'}), 200);
+        }
+      };
+      img.src = src;
+    });
+  } else {
+    // 원본 없음: 합쳐진 이미지만 캔버스에 표시 (모자이크/워터마크만 편집 가능)
+    const img = new Image();
+    img.onload = () => {
+      const c = document.getElementById('collageCanvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      c.style.display = 'block';
+      fsPhotos = [];
+      fsThumbs();
+      _fsEditBase = { src: item.dataUrl, img };
+      document.getElementById('cvPh').style.display = 'none';
+      document.getElementById('dlBtn').classList.add('show');
+      document.getElementById('useBtn').classList.add('show');
+      document.getElementById('editToolbar').classList.add('visible');
+      const _ccb = document.getElementById('clearCanvasBtn'); if(_ccb) _ccb.style.display='block';
+      fsDataUrl = item.dataUrl;
+      _wmBaseDataUrl = null;
+      mosaicRegions = []; selectedRegionId = null;
+      const wmTog = document.getElementById('wmToggle');
+      if (wmTog) wmTog.checked = false;
+      setTimeout(renderMosaicOverlay, 50);
+      setTimeout(renderSlotOverlay, 60);
+      const fsTab = document.querySelector('[onclick*="framesnap"]');
+      if (fsTab) fsTab.click();
+      setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'center'}), 150);
+    };
+    img.src = item.dataUrl;
+    showToast('⚠️ 이 콜라주는 원본 사진 정보가 없어요. 모자이크/워터마크만 편집 가능해요.', 4000);
+  }
 
   if (overlay) overlay.remove();
 }
@@ -1744,6 +1911,8 @@ function fsGenerate(){
 function fsClearCanvas() {
   fsPhotos = [];
   fsThumbs();
+  srcSelected.clear();
+  srcPanelRender();
   const canvas = document.getElementById('collageCanvas');
   if (canvas) { canvas.style.display = 'none'; const ctx = canvas.getContext('2d'); ctx.clearRect(0,0,canvas.width,canvas.height); }
   document.getElementById('cvPh').style.display = 'flex';
@@ -2217,7 +2386,7 @@ function fsApplyWatermark() {
     const penguin = new Image();
     penguin.onload = () => {
       // 크기: 짧은 쪽의 7% (기존 28%의 1/4)
-      const diam = Math.round(Math.min(canvas.width, canvas.height) * 0.07);
+      const diam = Math.round(Math.min(canvas.width, canvas.height) * 0.105);
       const r = diam / 2;
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
