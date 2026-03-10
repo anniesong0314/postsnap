@@ -263,6 +263,8 @@
   .src-item.liked-src .src-heart { opacity:1 !important; }
   .src-item img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
   .src-num { position:absolute; top:3px; left:4px; font-size:0.62rem; font-weight:700; color:#fff; background:rgba(0,0,0,0.55); border-radius:4px; padding:1px 4px; pointer-events:none; }
+  .src-zoom { position:absolute; bottom:4px; right:4px; width:22px; height:22px; background:rgba(0,0,0,0.55); border:none; border-radius:5px; color:#fff; font-size:0.75rem; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:3; }
+  .src-item:hover .src-zoom { display:flex; }
   .src-del { position:absolute; top:3px; right:3px; background:rgba(0,0,0,0.55); border:none; color:#fff; font-size:0.6rem; border-radius:50%; width:16px; height:16px; cursor:pointer; display:none; align-items:center; justify-content:center; z-index:2; }
   .src-item:hover .src-del { display:flex; }
   .src-chk { position:absolute; top:3px; right:22px; background:rgba(255,255,255,0.9); border:1.5px solid #ccc; border-radius:50%; width:15px; height:15px; cursor:pointer; display:none; align-items:center; justify-content:center; font-size:0.55rem; z-index:2; }
@@ -680,20 +682,34 @@ function saveDraft() {
   try {
     const drafts = JSON.parse(localStorage.getItem('ps_drafts') || '[]');
     const ctx = document.getElementById('contextInput').value.trim();
-    // 중복 방지: 같은 ctx+platform 조합은 업데이트
     const key = ctx.slice(0,30) + psSelectedPlatforms.join(',');
     const existIdx = drafts.findIndex(d => d.key === key);
-    const firstLine = (psOutput.blog||psOutput.linkedin||psOutput.youtube||psOutput.instagram||psOutput.x||'').split('\n')[0].slice(0,40);
+    const now = Date.now();
+    // 미리보기용 텍스트: 첫 줄 최대 120자
+    const fullText = (psOutput.blog||psOutput.linkedin||psOutput.youtube||psOutput.instagram||psOutput.x||'');
+    const preview = fullText.replace(/\n+/g,' ').trim().slice(0, 120);
     const draft = {
       key,
-      title: ctx.slice(0,22) || '메모 없음',
-      firstLine,
+      title: ctx.slice(0,40) || '메모 없음',
+      preview,
       platforms: [...psSelectedPlatforms],
       tone: psTone,
       out: {...psOutput},
       ctx,
-      ts: Date.now()
+      createdTs: existIdx >= 0 ? (drafts[existIdx].createdTs || now) : now,
+      updatedTs: now,
+      // 이미지: 별도 key로 저장 (용량 절약)
+      hasImg: !!psImage,
+      imgType: psImageType || 'image/jpeg'
     };
+    // 이미지를 별도 localStorage key에 저장
+    if (psImage) {
+      try {
+        localStorage.setItem('ps_draft_img_' + key.replace(/[^a-z0-9]/gi,'_'), psImage + '||' + (psImageType||'image/jpeg'));
+      } catch(e) { draft.hasImg = false; }
+    } else {
+      localStorage.removeItem('ps_draft_img_' + key.replace(/[^a-z0-9]/gi,'_'));
+    }
     if (existIdx >= 0) drafts[existIdx] = draft;
     else drafts.unshift(draft);
     if (drafts.length > 8) drafts.pop();
@@ -716,19 +732,31 @@ function renderDrafts() {
     if (countEl) countEl.textContent = drafts.length;
     const chips = document.getElementById('draftChips');
     if (!chips) return;
+    const fmtDt = ts => ts ? new Date(ts).toLocaleString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
     chips.innerHTML = drafts.map((d,i) => {
       const pTags = (d.platforms||[]).map(p=>`<span style="font-size:0.68rem;background:var(--cream);padding:2px 6px;border-radius:10px;color:var(--muted);">${platformLabels[p]||p}</span>`).join('');
       const tTag = `<span style="font-size:0.68rem;background:var(--accent-light);padding:2px 6px;border-radius:10px;color:var(--accent);">${toneLabels[d.tone]||d.tone}</span>`;
-      const dt = d.ts ? new Date(d.ts).toLocaleDateString('ko-KR',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
-      return `<div style="background:var(--white);border:1.5px solid var(--cream);border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--cream)'" onclick="loadDraft(${i})">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;">
-          <div style="font-size:0.85rem;font-weight:600;color:var(--ink);">${d.title}</div>
-          <button onclick="delDraft(event,${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;padding:0 0 0 8px;">✕</button>
+      const imgBadge = d.hasImg ? `<span style="font-size:0.68rem;background:#e8f4fd;padding:2px 6px;border-radius:10px;color:#2980b9;">🖼 이미지</span>` : '';
+      // 날짜: createdTs / updatedTs 구분
+      const createdStr = fmtDt(d.createdTs || d.ts);
+      const updatedStr = fmtDt(d.updatedTs);
+      const dateHtml = (d.updatedTs && d.updatedTs !== d.createdTs)
+        ? `<div style="font-size:0.66rem;color:var(--muted);text-align:right;line-height:1.7;">
+             <span>첫 생성 ${createdStr}</span><br>
+             <span>마지막 수정 ${updatedStr}</span>
+           </div>`
+        : `<div style="font-size:0.66rem;color:var(--muted);text-align:right;">생성 ${createdStr}</div>`;
+      // 미리보기 텍스트: preview 우선, 없으면 firstLine
+      const previewText = d.preview || d.firstLine || '';
+      return `<div style="background:var(--white);border:1.5px solid var(--cream);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--cream)'" onclick="loadDraft(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+          <div style="font-size:0.87rem;font-weight:700;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.title}</div>
+          <button onclick="delDraft(event,${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;flex-shrink:0;padding:0;">✕</button>
         </div>
-        ${d.firstLine ? `<div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px;line-height:1.4;">${d.firstLine}…</div>` : ''}
-        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;">
-          ${pTags} ${tTag}
-          <span style="margin-left:auto;font-size:0.68rem;color:var(--muted);">${dt}</span>
+        ${previewText ? `<div style="font-size:0.79rem;color:#555;margin-bottom:8px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${previewText}${previewText.length>=120?'…':''}</div>` : ''}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;">
+          <div style="display:flex;gap:4px;flex-wrap:wrap;">${pTags} ${tTag} ${imgBadge}</div>
+          ${dateHtml}
         </div>
       </div>`;
     }).join('');
@@ -740,8 +768,48 @@ function loadDraft(i) {
     const d = drafts[i]; if(!d) return;
     document.getElementById('contextInput').value = d.ctx || '';
     document.getElementById('charCount').textContent = (d.ctx||'').length;
+    // 플랫폼/톤 복원
+    psSelectedPlatforms = d.platforms || ['blog'];
+    psTone = d.tone || 'warm';
+    document.querySelectorAll('[data-platform]').forEach(btn => {
+      btn.classList.toggle('active', psSelectedPlatforms.includes(btn.dataset.platform));
+    });
+    document.querySelectorAll('[data-tone]').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tone === psTone);
+    });
+    // 이미지 복원
+    const imgKey = 'ps_draft_img_' + (d.key||'').replace(/[^a-z0-9]/gi,'_');
+    const imgRaw = localStorage.getItem(imgKey);
+    if (imgRaw && d.hasImg) {
+      const parts = imgRaw.split('||');
+      psImage = parts[0];
+      psImageType = parts[1] || 'image/jpeg';
+      // 미리보기 이미지 표시
+      const img = document.getElementById('preview-img');
+      if (img) {
+        img.src = 'data:' + psImageType + ';base64,' + psImage;
+        img.style.display = 'block';
+        document.querySelector('.upload-icon').style.display = 'none';
+        document.querySelector('.upload-text').style.display = 'none';
+        document.getElementById('uploadZone').classList.add('has-preview');
+        document.getElementById('removeImgBtn').style.display = 'flex';
+      }
+    } else {
+      psImage = null; psImageType = 'image/jpeg';
+      const img = document.getElementById('preview-img');
+      if (img) { img.src=''; img.style.display='none'; }
+      document.querySelector('.upload-icon').style.display = 'block';
+      document.querySelector('.upload-text').style.display = 'block';
+      document.getElementById('uploadZone').classList.remove('has-preview');
+      document.getElementById('removeImgBtn').style.display = 'none';
+    }
     psOutput = d.out; showOutput();
-  } catch(e) {}
+    // 목록 접기
+    const el = document.getElementById('draftList');
+    if (el) el.style.display = 'none';
+    const btn = document.querySelector('[onclick="toggleDraftList()"]');
+    if (btn) btn.textContent = '목록 펼치기 ▾';
+  } catch(e) { console.error('loadDraft error:', e); }
 }
 function delDraft(e, i) {
   e.stopPropagation();
@@ -1561,6 +1629,7 @@ function srcPanelRender() {
       <span class="src-num">${i+1}</span>
       <button class="src-chk" onclick="srcToggleSelect(${i}, event)">${sel ? '✓' : ''}</button>
       <button class="src-del" onclick="srcDeleteOne(${i}, event)" title="삭제">✕</button>
+      <button class="src-zoom" onclick="srcPreview(${i})" title="전체보기">⛶</button>
       <button class="src-heart${liked?' liked':''}" onclick="srcToggleLike(${i},event)" title="하트">
         <svg width="12" height="12" viewBox="0 0 24 24">
           <path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.518 3.378 1 6.5 1c1.95 0 3.764 1.077 4.5 2.796C11.737 2.077 13.55 1 15.5 1 18.622 1 21 3.518 21 7.191c0 4.105-5.37 8.863-11 14.402z"
@@ -1573,8 +1642,7 @@ function srcPanelRender() {
   // hover 시 미리보기 하이라이트 등
   grid.querySelectorAll('.src-item').forEach(el => {
     el.addEventListener('click', e => {
-      if (e.target.closest('.src-chk') || e.target.closest('.src-del') || e.target.closest('.src-heart')) return;
-      if (e.target.tagName === 'IMG') { srcPreview(parseInt(el.dataset.idx)); return; }
+      if (e.target.closest('.src-chk') || e.target.closest('.src-del') || e.target.closest('.src-heart') || e.target.closest('.src-zoom')) return;
       srcToggleSelect(parseInt(el.dataset.idx), e);
     });
   });
@@ -1627,19 +1695,22 @@ let _lbImages = [];   // [{src, label}]
 let _lbIdx = 0;
 let _lbEscHandler = null;
 
-let _lbEditCb = null; // 수정 버튼 콜백
-function lbOpen(images, startIdx, sourceLabel, editCallback) {
+let _lbEditCb = null;
+let _lbDeleteCb = null;
+function lbOpen(images, startIdx, sourceLabel, editCallback, deleteCallback) {
   _lbImages = images;
   _lbIdx = Math.max(0, Math.min(startIdx, images.length - 1));
   _lbEditCb = editCallback || null;
+  _lbDeleteCb = deleteCallback || null;
   document.getElementById('lbSource').textContent = sourceLabel || '';
-  // 수정 버튼 표시 여부
+
+  // ── 수정 버튼
   let editBtn = document.getElementById('lbEditBtn');
   if (!editBtn) {
     editBtn = document.createElement('button');
     editBtn.id = 'lbEditBtn';
     editBtn.title = '이 콜라주 수정하기';
-    editBtn.style.cssText = 'position:absolute;bottom:60px;right:28px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.4);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
+    editBtn.style.cssText = 'position:absolute;bottom:70px;right:28px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.4);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
     editBtn.textContent = '✏️';
     editBtn.addEventListener('mouseenter', () => editBtn.style.background='var(--accent)');
     editBtn.addEventListener('mouseleave', () => editBtn.style.background='rgba(0,0,0,0.5)');
@@ -1650,6 +1721,35 @@ function lbOpen(images, startIdx, sourceLabel, editCallback) {
     editBtn.onclick = () => { _lbEditCb(_lbIdx); lbClose(); };
   } else {
     editBtn.style.display = 'none';
+  }
+
+  // ── 삭제 버튼
+  let delBtn = document.getElementById('lbDelBtn');
+  if (!delBtn) {
+    delBtn = document.createElement('button');
+    delBtn.id = 'lbDelBtn';
+    delBtn.title = '이미지 삭제';
+    delBtn.style.cssText = 'position:absolute;bottom:18px;right:28px;width:42px;height:42px;border-radius:50%;background:rgba(0,0,0,0.5);border:2px solid rgba(255,255,255,0.25);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;';
+    delBtn.textContent = '🗑';
+    delBtn.addEventListener('mouseenter', () => delBtn.style.background='#c0392b');
+    delBtn.addEventListener('mouseleave', () => delBtn.style.background='rgba(0,0,0,0.5)');
+    document.getElementById('lbOverlay').appendChild(delBtn);
+  }
+  if (_lbDeleteCb) {
+    delBtn.style.display = 'flex';
+    delBtn.onclick = async () => {
+      const confirmed = await cgConfirmDialog('이미지를 삭제할까요?');
+      if (!confirmed) return;
+      const delIdx = _lbIdx;
+      _lbDeleteCb(delIdx);
+      // 삭제 후 처리
+      _lbImages.splice(delIdx, 1);
+      if (_lbImages.length === 0) { lbClose(); return; }
+      _lbIdx = Math.min(delIdx, _lbImages.length - 1);
+      lbShow();
+    };
+  } else {
+    delBtn.style.display = 'none';
   }
   lbShow();
   const ov = document.getElementById('lbOverlay');
@@ -1691,7 +1791,14 @@ function lbClose() {
 // ── 원본 이미지 패널 전체보기
 function srcPreview(idx) {
   const images = fsPhotos.map((p, i) => ({ src: p.src, label: `사진 ${i+1}` }));
-  lbOpen(images, idx, '원본 이미지');
+  lbOpen(images, idx, '원본 이미지', null, (delIdx) => {
+    // 원본 이미지 삭제
+    fsPhotos.splice(delIdx, 1);
+    srcSelected.clear();
+    fsThumbs();
+    srcPanelRender();
+    fsAutoPreview();
+  });
 }
 
 // ── 임시저장 갤러리 전체보기 (id 기준)
@@ -1699,10 +1806,23 @@ function cgPreviewLb(id) {
   const items = cgLoad();
   const images = items.map(it => ({ src: it.dataUrl, label: '' }));
   const idx = items.findIndex(it => it.id === id);
-  lbOpen(images, idx >= 0 ? idx : 0, '임시저장된 콜라주', (lbCurIdx) => {
-    const curItem = items[lbCurIdx];
-    if (curItem) cgStartEdit(curItem.id);
-  });
+  // items 배열을 클로저로 유지해야 삭제 시 id 매핑 가능
+  let lbItems = items.slice();
+  lbOpen(images, idx >= 0 ? idx : 0, '임시저장된 콜라주',
+    // 수정 콜백
+    (lbCurIdx) => {
+      const curItem = lbItems[lbCurIdx];
+      if (curItem) cgStartEdit(curItem.id);
+    },
+    // 삭제 콜백
+    (delIdx) => {
+      const delItem = lbItems[delIdx];
+      if (delItem) {
+        cgDeleteItem(delItem.id);
+        lbItems.splice(delIdx, 1);
+      }
+    }
+  );
 }
 
 
