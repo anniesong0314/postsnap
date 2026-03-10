@@ -240,6 +240,21 @@
   .slot-pop-btn { padding:7px 12px; border:none; border-radius:7px; cursor:pointer; font-size:0.75rem; font-weight:600; font-family:'DM Sans',sans-serif; text-align:left; transition:background 0.12s; background:none; color:var(--ink); }
   .slot-pop-btn:hover { background:var(--accent-light); color:var(--accent); }
   .slot-pop-btn.danger:hover { background:#fde8e8; color:#c0392b; }
+
+  .img-plan-badge {
+    display:inline-block;
+    background:var(--accent);
+    color:#fff;
+    border-radius:6px;
+    padding:2px 8px;
+    font-size:0.75rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background 0.12s,transform 0.1s;
+    white-space:nowrap;
+    font-family:'DM Sans',sans-serif;
+  }
+  .img-plan-badge:hover { background:#a84d20; transform:scale(1.04); }
 </style>
 </head>
 <body>
@@ -341,10 +356,21 @@
     <div id="imagePlanCard" style="display:none; margin-top:14px; background:var(--accent-light); border:1.5px solid var(--accent); border-radius:12px; padding:16px 18px;">
       <div style="font-size:0.78rem; font-weight:700; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
         🖼️ 이미지 배치 추천
-        <span style="font-size:0.68rem; color:var(--muted); font-weight:400; margin-left:4px;">AI가 분석한 최적 배치 플랜이에요</span>
+        <span style="font-size:0.68rem; color:var(--muted); font-weight:400; margin-left:4px;">글 안에 {콜라주} 위치가 표시돼요 — 클릭해서 바로 만들어보세요</span>
       </div>
-      <div id="imagePlanContent" style="font-size:0.8rem; color:var(--ink); line-height:1.8; white-space:pre-wrap;"></div>
-      <button onclick="switchPage('framesnap', document.querySelector('[onclick*=framesnap]'))" style="margin-top:12px; padding:7px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer;">→ FrameSnap에서 콜라주 만들기</button>
+      <div id="imagePlanContent" style="font-size:0.8rem; color:var(--ink); line-height:1.75; white-space:pre-wrap;"></div>
+      <button onclick="openCollagePlanModal()" style="margin-top:12px; padding:7px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer;">→ FrameSnap에서 콜라주 만들기</button>
+    </div>
+
+    <!-- 콜라주 추천 모달 -->
+    <div id="collagePlanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:24px 28px;max-width:420px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);font-family:'DM Sans',sans-serif;">
+        <div style="font-size:0.92rem;font-weight:700;color:var(--ink);margin-bottom:6px;">📐 추천 콜라주 목록</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">만들고 싶은 콜라주를 선택하면 FrameSnap으로 이동해요</div>
+        <div id="collagePlanList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <button onclick="document.getElementById('collagePlanModal').style.display='none'"
+          style="margin-top:18px;width:100%;padding:9px;border:1.5px solid #ddd;border-radius:9px;background:none;font-size:0.8rem;color:var(--muted);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">닫기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -503,6 +529,12 @@
           <span class="wm-slider"></span>
         </label>
         <span style="font-size:0.78rem;color:var(--muted);font-weight:600;">🐧 워터마크</span>
+        <div style="display:inline-flex;gap:4px;align-items:center;" title="워터마크 글씨 색상">
+          <button id="wmColorBlack" onclick="setWmColor('#000000')"
+            style="width:20px;height:20px;border-radius:50%;background:#000;border:2px solid var(--accent);cursor:pointer;transition:transform 0.1s;flex-shrink:0;" title="검정"></button>
+          <button id="wmColorWhite" onclick="setWmColor('#ffffff')"
+            style="width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid #ddd;cursor:pointer;transition:transform 0.1s;flex-shrink:0;" title="흰색"></button>
+        </div>
         <div style="position:relative;display:inline-block;">
           <button id="wmOpacityBtn" onclick="toggleWmDropdown()" style="padding:4px 10px;border:1.5px solid var(--cream);border-radius:7px;background:var(--paper);font-size:0.75rem;font-weight:700;color:var(--accent);cursor:pointer;font-family:'DM Sans',sans-serif;min-width:52px;">30% ▾</button>
           <div id="wmDropdown" style="display:none;position:absolute;bottom:110%;left:0;background:#fff;border:1.5px solid var(--cream);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,0.1);z-index:100;padding:6px;min-width:56px;">
@@ -781,10 +813,24 @@ async function generatePost() {
 
   // 이미지 배치 추천: psImage가 있을 때만 추가 (같은 호출, 추가비용 없음)
   if(psImage) {
-    prompt += `\n\n[IMAGE_PLAN]\n사진을 분석하여 아래 형식으로 이미지 배치 계획을 작성해주세요. 반드시 한국어로:
-1. 사진 분류: 비슷한 주제/분위기의 사진 그룹을 콤마로 묶어 제안 (예: "사진1+2+3 → 콜라주 추천: 행사 전경", "사진4 → 단독 사용: 핵심 장면")
-2. 배치 순서: 각 이미지/콜라주를 글의 어느 문단 뒤에 넣을지 (예: "콜라주A → 도입부 문단 뒤", "단독사진B → 마지막 문단 뒤")  
-3. 제외 추천: 품질이 낮거나 중복되는 사진 번호 (없으면 "없음")
+    prompt += `\n\n[IMAGE_PLAN]
+사진 속에 여러 장의 사진이 콜라주 형태로 있을 수 있습니다. 사진 번호는 왼쪽 위부터 가로 방향으로 순서대로 1, 2, 3... 으로 셉니다 (두 번째 줄 첫 번째 = 한 줄에 사진이 N개라면 N+1번).
+
+아래 형식을 정확히 따라 이미지 배치 계획을 작성하세요:
+- 글의 각 문단 사이에 {사진N과 사진M의 콜라주} 또는 {사진N 단독} 형식으로 삽입 지시를 넣어주세요
+- 이미지 삽입 지시는 문단과 문단 사이 빈 줄에 단독으로 배치
+- 예시:
+  도입 문단 텍스트...
+
+  {사진1과 사진2의 콜라주}
+
+  두 번째 문단 텍스트...
+
+  {사진5 단독}
+
+- 첨부 이미지 5장당 최소 2~3개의 {콜라주} 삽입 지시 포함
+- 품질이 낮거나 중복되는 사진은 제외하고 번호 언급
+- 반드시 한국어로 작성
 [/IMAGE_PLAN]`;
   }
   const {iv,fill}=animateProgress();
@@ -792,7 +838,7 @@ async function generatePost() {
     const messages=[];
     if(psImage){messages.push({role:'user',content:[{type:'image',source:{type:'base64',media_type:psImageType,data:psImage}},{type:'text',text:prompt}]});}
     else{messages.push({role:'user',content:prompt});}
-    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages})});
+    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages})});
     const data=await res.json();
     const text=data.content?.map(i=>i.text||'').join('\n')||'';
     clearInterval(iv); fill.style.width='100%';
@@ -825,12 +871,15 @@ async function generatePost() {
     clearInterval(iv); loading.style.display='none'; oa.style.display='block';
     document.getElementById('tab-blog').innerHTML=`<div class="generated-text">❌ 오류: ${err.message}</div>`;
     document.getElementById('tab-blog').classList.add('active');
+  } finally {
+    btn.disabled=false; btn.textContent='✦ 포스트 자동 생성하기';
   }
-  btn.disabled=false; btn.textContent='✦ 포스트 자동 생성하기';
+  // btn 복구는 try/catch 안에서 처리됨
 }
 
 // ── FRAMESNAP ────────────────────────────
 let fsPhotos=[], fsLayoutSel='2h', fsGapSel=0, fsBgSel='#ffffff', fsRatioSel='1:1', fsDataUrl=null;
+let _fsEditBase = null; // 갤러리에서 수정 모드로 불러온 이미지
 
 document.getElementById('fsInput').addEventListener('change', function(e) {
   const files = Array.from(e.target.files);
@@ -1602,21 +1651,29 @@ async function cgStartEdit(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
 
-  // dataUrl → Image 객체로 변환 후 fsPhotos에 로드
+  // dataUrl을 캔버스에 직접 표시 (fsPhotos는 단일 원본 이미지로 세팅)
   const img = new Image();
   img.onload = () => {
-    fsPhotos = [{ src: item.dataUrl, img, type: 'image/jpeg' }];
-    fsThumbs();
-    // 미리보기 캔버스에 바로 표시
+    // 캔버스를 이미지 원본 크기로 맞춰 직접 렌더 (레이아웃 재계산 없이)
     const c = document.getElementById('collageCanvas');
-    c.width = img.width; c.height = img.height;
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
     c.getContext('2d').drawImage(img, 0, 0);
     c.style.display = 'block';
+    // fsPhotos는 비워둠 (수정 모드: 레이아웃 자동재생성 방지)
+    fsPhotos = [];
+    fsThumbs();
+    // 내부 편집용: 이 이미지를 "편집 베이스"로 사용
+    _fsEditBase = { src: item.dataUrl, img };
     document.getElementById('cvPh').style.display = 'none';
     document.getElementById('dlBtn').classList.add('show');
     document.getElementById('useBtn').classList.add('show');
     document.getElementById('editToolbar').classList.add('visible');
+    const _ccb = document.getElementById('clearCanvasBtn'); if(_ccb) _ccb.style.display='block';
     fsDataUrl = item.dataUrl;
+    _wmBaseDataUrl = null;
+    mosaicRegions = []; selectedRegionId = null;
+    const wmTog = document.getElementById('wmToggle');
+    if (wmTog) wmTog.checked = false;
     setTimeout(renderMosaicOverlay, 50);
     setTimeout(renderSlotOverlay, 60);
     // FrameSnap 탭으로 이동 후 스크롤
@@ -2020,15 +2077,76 @@ function fsUndoMosaic() {
 // 콜라주 새로 생성할 때 오버레이 재렌더
 window.addEventListener('resize', renderMosaicOverlay);
 
+
+function showToast(msg, duration) {
+  let t = document.getElementById('_appToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '_appToast';
+    t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:10px;font-size:0.8rem;font-weight:500;z-index:99999;max-width:360px;text-align:center;font-family:"DM Sans",sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.25);transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(() => { t.style.opacity = '0'; }, duration || 3000);
+}
+
 function showImagePlan() {
   const card = document.getElementById('imagePlanCard');
   const planContent = document.getElementById('imagePlanContent');
   if (psImagePlan && psImage) {
-    planContent.textContent = psImagePlan;
+    // {사진N과 사진M의 콜라주} 또는 {사진N 단독} → 클릭 가능한 배지로 변환
+    const html = psImagePlan
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\{([^}]+)\}/g, (_, inner) => {
+        return `<span class="img-plan-badge" onclick="openCollagePlanModal()" title="클릭해서 콜라주 만들기">{${inner}}</span>`;
+      });
+    planContent.innerHTML = html;
     card.style.display = 'block';
   } else {
     card.style.display = 'none';
   }
+}
+
+// {사진N...} 태그 파싱 → 추천 목록 추출
+function parseCombos() {
+  const matches = [...(psImagePlan||'').matchAll(/\{([^}]+)\}/g)];
+  return matches.map(m => m[1].trim()).filter(Boolean);
+}
+
+function openCollagePlanModal() {
+  const combos = parseCombos();
+  if (!combos.length) {
+    switchPage('framesnap', document.querySelector('[onclick*=framesnap]'));
+    return;
+  }
+  const list = document.getElementById('collagePlanList');
+  list.innerHTML = combos.map((c, i) => `
+    <button onclick="startCollageFromPlan(${i})"
+      style="text-align:left;padding:10px 14px;border:1.5px solid var(--cream);border-radius:9px;background:var(--paper);font-size:0.8rem;color:var(--ink);font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;"
+      onmouseover="this.style.background='var(--accent-light)';this.style.borderColor='var(--accent)'"
+      onmouseout="this.style.background='var(--paper)';this.style.borderColor='var(--cream)'">
+      📐 ${c}
+    </button>`).join('');
+  document.getElementById('collagePlanModal').style.display = 'flex';
+}
+
+function startCollageFromPlan(idx) {
+  const combos = parseCombos();
+  const combo = combos[idx];
+  document.getElementById('collagePlanModal').style.display = 'none';
+  // 사진 번호 추출 (숫자만)
+  const nums = [...(combo||'').matchAll(/사진\s*(\d+)/g)].map(m => parseInt(m[1]));
+  // FrameSnap 탭으로 이동 후 안내 표시
+  switchPage('framesnap', document.querySelector('[onclick*=framesnap]'));
+  setTimeout(() => {
+    if (nums.length > 0) {
+      const msg = `${combo}\n\n원본 콜라주에서 위 사진 번호에 해당하는 사진들을 선택해서\n미리보기 영역에 드래그&드롭하세요!`;
+      // 안내 토스트
+      showToast(`📐 ${combo} — 해당 사진들을 미리보기에 드래그해서 콜라주를 만들어보세요!`, 5000);
+    }
+  }, 300);
 }
 
 
@@ -2120,7 +2238,7 @@ function fsApplyWatermark() {
       const textY = cy - diam * 0.08 + r + diam * 0.25;
       const fontSize = Math.round(diam * 0.55);
       ctx.font = `700 ${fontSize}px 'DM Sans', Arial, sans-serif`;
-      ctx.fillStyle = '#000000';
+      ctx.fillStyle = _wmColor;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
@@ -2128,7 +2246,7 @@ function fsApplyWatermark() {
       const iconSize = fontSize * 1.2;
       const totalW = iconSize + 4 + textWidth;
 
-      drawInstaIcon(ctx, cx - totalW/2, textY - iconSize/2, iconSize);
+      drawInstaIcon(ctx, cx - totalW/2, textY - iconSize/2, iconSize, _wmColor);
       ctx.fillText('Work_Penguin', cx - totalW/2 + iconSize + 4 + textWidth/2, textY);
       ctx.restore();
 
@@ -2139,6 +2257,13 @@ function fsApplyWatermark() {
 }
 
 let _wmOpacityVal = 30;
+let _wmColor = '#000000';
+function setWmColor(c) {
+  _wmColor = c;
+  document.getElementById('wmColorBlack').style.border = c==='#000000' ? '2px solid var(--accent)' : '2px solid #ccc';
+  document.getElementById('wmColorWhite').style.border = c==='#ffffff' ? '2px solid var(--accent)' : '2px solid #ccc';
+  if (document.getElementById('wmToggle').checked) fsApplyWatermark();
+}
 
 function toggleWmDropdown() {
   const dd = document.getElementById('wmDropdown');
@@ -2189,24 +2314,21 @@ function fsWatermarkOpacityChange(val) {
   selectWmOpacity(parseInt(val));
 }
 
-function drawInstaIcon(ctx, x, y, size) {
-  const r = size * 0.15;
+function drawInstaIcon(ctx, x, y, size, color) {
+  color = color || '#000000';
   const s = size;
   ctx.save();
-  ctx.strokeStyle = '#000';
+  ctx.strokeStyle = color;
   ctx.lineWidth = size * 0.09;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.fillStyle = 'transparent';
-  // 외곽 사각형
   roundRect(ctx, x + size*0.08, y + size*0.08, size*0.84, size*0.84, size*0.22);
   ctx.stroke();
-  // 원
   ctx.beginPath();
   ctx.arc(x + s/2, y + s/2, s*0.22, 0, Math.PI*2);
   ctx.stroke();
-  // 점
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(x + s*0.72, y + s*0.28, s*0.07, 0, Math.PI*2);
   ctx.fill();
