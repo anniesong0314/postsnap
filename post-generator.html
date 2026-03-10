@@ -227,6 +227,19 @@
   .cg-heart.liked svg .heart-stroke { opacity:0; }
   .cg-heart svg .heart-fill { opacity:0; transition:opacity 0.15s; }
   .cg-heart svg .heart-stroke { opacity:1; transition:opacity 0.15s; }
+
+  /* 콜라주 슬롯 인터랙션 */
+  #collageSlotOverlay { position:absolute; top:0; left:0; width:0; height:0; pointer-events:none; z-index:20; }
+  .col-slot-btn { position:absolute; cursor:grab; }
+  .col-slot-btn:active { cursor:grabbing; }
+  .col-slot-btn.drag-over { outline:3px solid var(--accent); outline-offset:-3px; background:rgba(200,96,42,0.15); border-radius:4px; }
+  .col-slot-btn.dragging { opacity:0.5; }
+  /* 클릭 팝업 */
+  #slotPopup { position:absolute; background:#fff; border:1.5px solid var(--cream); border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.18); z-index:99; padding:6px; display:none; flex-direction:column; gap:4px; min-width:110px; }
+  #slotPopup.show { display:flex; }
+  .slot-pop-btn { padding:7px 12px; border:none; border-radius:7px; cursor:pointer; font-size:0.75rem; font-weight:600; font-family:'DM Sans',sans-serif; text-align:left; transition:background 0.12s; background:none; color:var(--ink); }
+  .slot-pop-btn:hover { background:var(--accent-light); color:var(--accent); }
+  .slot-pop-btn.danger:hover { background:#fde8e8; color:#c0392b; }
 </style>
 </head>
 <body>
@@ -376,24 +389,15 @@
     <!-- ② 작업 영역 (2컬럼) -->
     <div class="fs-work-row">
       <div>
-      <div class="fs-card">
-        <div class="fs-card-hd"><div class="step-badge">1</div><div class="panel-title">사진 올리기</div></div>
-        <div class="fs-card-bd">
-          <div class="upload-multi" id="fsZone">
-            <input type="file" id="fsInput" accept="image/*" multiple>
-            <span style="font-size:1.8rem;display:block;margin-bottom:8px;">🖼️</span>
-            <div style="font-size:0.82rem;color:var(--muted);line-height:1.5;"><strong style="color:var(--accent)">클릭 또는 드래그</strong><br>여러 장 한번에 선택 가능</div>
-          </div>
-          <div class="thumb-grid" id="fsThumbs"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-            <div style="font-size:0.73rem;color:var(--muted);" id="fsCount"></div>
-            <button id="fsClearAllBtn" onclick="fsClearAllPhotos()" style="display:none;font-size:0.72rem;color:#c0392b;background:none;border:1.5px solid #f0c0bb;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">전체 삭제</button>
-          </div>
-        </div>
-      </div>
+      <!-- 숨겨진 파일 입력 (교체용) -->
+      <input type="file" id="fsInput" accept="image/*" multiple style="display:none">
+      <input type="file" id="fsReplaceInput" accept="image/*" style="display:none">
+      <div id="fsThumbs" style="display:none;"></div>
+      <div id="fsCount" style="display:none;"></div>
+      <button id="fsClearAllBtn" style="display:none;"></button>
 
       <div class="fs-card">
-        <div class="fs-card-hd"><div class="step-badge">2</div><div class="panel-title">레이아웃 & 옵션</div></div>
+        <div class="fs-card-hd"><div class="step-badge">1</div><div class="panel-title">레이아웃 & 옵션</div></div>
         <div class="fs-card-bd">
           <!-- 사진 장수 선택 -->
           <div class="opt-lbl">사진 장수</div>
@@ -452,7 +456,7 @@
         </div>
       </div>
 
-      <button class="fs-gen-btn" onclick="fsGenerate()">✦ 콜라주 만들기</button>
+      <button class="fs-gen-btn" onclick="fsGenerateAndSave()">✦ 콜라주 만들기</button>
       <button class="use-btn" id="useBtn" onclick="useInPostSnap()">📝 이 콜라주로 PostSnap에서 글 쓰기 →</button>
       </div><!-- /left col -->
 
@@ -462,12 +466,23 @@
         <button class="dl-btn" id="dlBtn" onclick="fsDownload()">⬇ 내려받기</button>
       </div>
       <div class="cv-body">
-        <div class="cv-ph" id="cvPh">
+        <div class="cv-ph" id="cvPh" id="cvDropZone"
+          style="width:100%;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--cream);border-radius:12px;cursor:pointer;transition:all 0.2s;"
+          onclick="document.getElementById('fsInput').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)'"
+          ondragleave="this.style.borderColor='var(--cream)';this.style.background=''"
+          ondrop="cvPhDrop(event)">
           <span class="ph-icon">🖼️</span>
-          <p>사진을 올리고<br>레이아웃을 골라서<br>콜라주를 만들어보세요</p>
+          <p style="font-size:0.85rem;color:var(--muted);line-height:1.8;">사진을 <strong style="color:var(--accent)">끌어다 놓거나</strong><br>클릭해서 선택하세요<br><span style="font-size:0.75rem;opacity:0.7;">여러 장 한번에 가능해요</span></p>
         </div>
         <canvas id="collageCanvas" style="cursor:crosshair;max-width:100%;display:none;"></canvas>
         <div id="mosaicOverlay" style="position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;overflow:visible;z-index:10;"></div>
+        <div id="collageSlotOverlay"></div>
+        <div id="slotPopup">
+          <button class="slot-pop-btn" onclick="slotPopReplace()">🔄 다른 사진으로 교체</button>
+          <button class="slot-pop-btn danger" onclick="slotPopDelete()">🗑 이 사진 삭제</button>
+        </div>
+        <input type="file" id="fsReplaceInput" accept="image/*" style="display:none">
       </div>
       <div class="edit-toolbar" id="editToolbar">
         <span class="brush-label">모자이크</span>
@@ -811,16 +826,49 @@ async function generatePost() {
 let fsPhotos=[], fsLayoutSel='2h', fsGapSel=0, fsBgSel='#ffffff', fsRatioSel='1:1', fsDataUrl=null;
 
 document.getElementById('fsInput').addEventListener('change', function(e) {
-  Array.from(e.target.files).forEach(file => {
-    const reader=new FileReader();
-    reader.onload=ev=>{const img=new Image();img.onload=()=>{fsPhotos.push({src:ev.target.result,img,type:file.type});fsThumbs();};img.src=ev.target.result;};
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  fsPhotos = [];
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        fsPhotos.push({src: ev.target.result, img, type: file.type});
+        loaded++;
+        if (loaded === files.length) { fsThumbs(); fsAutoPreview(); }
+      };
+      img.src = ev.target.result;
+    };
     reader.readAsDataURL(file);
-  }); this.value='';
+  });
+  this.value = '';
 });
-const fz=document.getElementById('fsZone');
-fz.addEventListener('dragover',e=>{e.preventDefault();fz.style.borderColor='var(--accent)';});
-fz.addEventListener('dragleave',()=>{fz.style.borderColor='';});
-fz.addEventListener('drop',e=>{e.preventDefault();fz.style.borderColor='';Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).forEach(file=>{const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{fsPhotos.push({src:ev.target.result,img,type:file.type});fsThumbs();};img.src=ev.target.result;};r.readAsDataURL(file);});});
+// cv-ph 드롭 함수
+function cvPhDrop(e) {
+  e.preventDefault();
+  const ph = document.getElementById('cvPh');
+  ph.style.borderColor = 'var(--cream)';
+  ph.style.background = '';
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  if (files.length === 0) return;
+  fsPhotos = []; // 새로 드롭하면 초기화
+  let loaded = 0;
+  files.forEach(file => {
+    const r = new FileReader();
+    r.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        fsPhotos.push({src: ev.target.result, img, type: file.type});
+        loaded++;
+        if (loaded === files.length) { fsThumbs(); fsAutoPreview(); }
+      };
+      img.src = ev.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
 
 function fsThumbs(){
   document.getElementById('fsThumbs').innerHTML=fsPhotos.map((p,i)=>`<div class="th"><img src="${p.src}"><button class="rm" onclick="fsRm(${i})">✕</button></div>`).join('');
@@ -1040,6 +1088,143 @@ function fsSlots(W,H,g,pad){
 function fsDraw(ctx,img,x,y,w,h){const ia=img.width/img.height,sa=w/h;let sx,sy,sw,sh;if(ia>sa){sh=img.height;sw=sh*sa;sx=(img.width-sw)/2;sy=0;}else{sw=img.width;sh=sw/sa;sx=0;sy=(img.height-sh)/2;}ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);ctx.restore();}
 
 
+
+// ── 콜라주 슬롯 인터랙션 ─────────────────────────────
+let _slotDragIdx = null;
+let _slotPopIdx = null;
+let _currentSlots = [];
+
+function renderSlotOverlay() {
+  const canvas = document.getElementById('collageCanvas');
+  const overlay = document.getElementById('collageSlotOverlay');
+  const popup = document.getElementById('slotPopup');
+  if (!canvas || canvas.style.display === 'none') { overlay.innerHTML=''; return; }
+
+  // 현재 편집 툴이 모자이크 모드면 슬롯 비활성
+  const activeTool = document.querySelector('.tool-btn.active');
+  const editMode = activeTool && (activeTool.id === 'toolRect' || activeTool.id === 'toolEllipse');
+  if (editMode) { overlay.innerHTML=''; return; }
+
+  // 캔버스 표시 크기 vs 실제 크기 비율
+  const scaleX = canvas.offsetWidth / canvas.width;
+  const scaleY = canvas.offsetHeight / canvas.height;
+  const rect = canvas.getBoundingClientRect();
+  const wrapRect = canvas.parentElement.getBoundingClientRect();
+  const ox = rect.left - wrapRect.left;
+  const oy = rect.top - wrapRect.top;
+
+  overlay.style.width = canvas.offsetWidth + 'px';
+  overlay.style.height = canvas.offsetHeight + 'px';
+  overlay.style.left = ox + 'px';
+  overlay.style.top = oy + 'px';
+  overlay.style.pointerEvents = 'auto';
+
+  const slots = _currentSlots;
+  overlay.innerHTML = slots.map((s, i) => `
+    <div class="col-slot-btn"
+      data-idx="${i}"
+      draggable="true"
+      style="left:${s.x*scaleX}px;top:${s.y*scaleY}px;width:${s.w*scaleX}px;height:${s.h*scaleY}px;position:absolute;"
+      onclick="slotClick(event,${i})"
+      ondragstart="slotDragStart(event,${i})"
+      ondragover="slotDragOver(event,${i})"
+      ondragleave="slotDragLeave(event,${i})"
+      ondrop="slotDrop(event,${i})"
+      ondragend="slotDragEnd(event)">
+    </div>`).join('');
+
+  // 팝업 닫기 (오버레이 바깥 클릭)
+  overlay.addEventListener('click', e => {
+    if (!e.target.closest('.col-slot-btn')) { popup.classList.remove('show'); }
+  });
+}
+
+function slotClick(e, idx) {
+  e.stopPropagation();
+  const popup = document.getElementById('slotPopup');
+  const btn = e.currentTarget;
+  const br = btn.getBoundingClientRect();
+  const wr = btn.closest('.cv-body').getBoundingClientRect();
+  _slotPopIdx = idx;
+  popup.style.left = (br.left - wr.left) + 'px';
+  popup.style.top = (br.bottom - wr.top + 4) + 'px';
+  popup.classList.toggle('show');
+}
+
+function slotDragStart(e, idx) {
+  _slotDragIdx = idx;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function slotDragOver(e, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.col-slot-btn').forEach(b => b.classList.remove('drag-over'));
+  if (idx !== _slotDragIdx) e.currentTarget.classList.add('drag-over');
+}
+function slotDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function slotDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.col-slot-btn').forEach(b => b.classList.remove('drag-over'));
+}
+function slotDrop(e, toIdx) {
+  e.preventDefault();
+  document.querySelectorAll('.col-slot-btn').forEach(b => b.classList.remove('drag-over','dragging'));
+  if (_slotDragIdx === null || _slotDragIdx === toIdx) return;
+  // 사진 배열에서 두 위치 교환
+  const tmp = fsPhotos[_slotDragIdx];
+  fsPhotos[_slotDragIdx] = fsPhotos[toIdx];
+  fsPhotos[toIdx] = tmp;
+  _slotDragIdx = null;
+  fsGenerate();
+}
+
+function slotPopReplace() {
+  document.getElementById('slotPopup').classList.remove('show');
+  document.getElementById('fsReplaceInput').click();
+}
+function slotPopDelete() {
+  document.getElementById('slotPopup').classList.remove('show');
+  if (_slotPopIdx === null) return;
+  fsPhotos.splice(_slotPopIdx, 1);
+  fsThumbs();
+  if (fsPhotos.length === 0) {
+    document.getElementById('collageCanvas').style.display = 'none';
+    document.getElementById('cvPh').style.display = 'flex';
+    document.getElementById('dlBtn').classList.remove('show');
+    document.getElementById('useBtn').classList.remove('show');
+    document.getElementById('editToolbar').classList.remove('visible');
+    document.getElementById('collageSlotOverlay').innerHTML = '';
+  } else {
+    fsGenerate();
+  }
+}
+
+// 교체 파일 선택
+document.getElementById('fsReplaceInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file || _slotPopIdx === null) { this.value=''; return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      fsPhotos[_slotPopIdx] = {src: ev.target.result, img, type: file.type};
+      fsGenerate();
+    };
+    img.src = ev.target.result;
+  };
+  r.readAsDataURL(file);
+  this.value = '';
+});
+
+// 팝업 바깥 클릭 시 닫기
+document.addEventListener('click', e => {
+  const popup = document.getElementById('slotPopup');
+  if (popup && !e.target.closest('#slotPopup') && !e.target.closest('.col-slot-btn')) {
+    popup.classList.remove('show');
+  }
+});
+
 // ── COLLAGE GALLERY ───────────────────────────────────
 // localStorage key: 'cg_items' → [{id, dataUrl, date}]
 const CG_KEY = 'framesnap_gallery';
@@ -1217,12 +1402,140 @@ function cgPreview(id) {
   const items = cgLoad();
   const item = items.find(i => i.id === id);
   if (!item) return;
+
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
-  overlay.innerHTML = `<img src="${item.dataUrl}" style="max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);">
-    <button style="position:absolute;top:20px;right:24px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.4rem;cursor:pointer;border-radius:50%;width:36px;height:36px;">✕</button>`;
-  overlay.addEventListener('click', () => overlay.remove());
+  overlay.id = 'cgFullOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;';
+
+  overlay.innerHTML = `
+    <!-- 닫기 버튼 -->
+    <button id="cgOverlayClose" title="닫기 (Esc)"
+      style="position:absolute;top:20px;right:24px;background:rgba(255,255,255,0.13);border:1.5px solid rgba(255,255,255,0.22);color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer;border-radius:8px;padding:6px 13px;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;transition:background 0.15s;"
+      onmouseover="this.style.background='rgba(255,255,255,0.24)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.13)'"
+      onclick="document.getElementById('cgFullOverlay').remove()">
+      ✕ 닫기 <span style="opacity:0.55;font-size:0.7rem;">Esc</span>
+    </button>
+
+    <!-- 이미지 컨테이너 -->
+    <div style="position:relative;display:inline-flex;" id="cgImgWrap">
+      <img src="${item.dataUrl}" style="max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);display:block;">
+      <!-- 수정 펜 아이콘 (커서 올릴 때 보임) -->
+      <button id="cgEditBtn" title="이 콜라주 수정하기"
+        onclick="cgStartEdit(${item.id})"
+        style="position:absolute;bottom:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.55);border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s,transform 0.15s;pointer-events:none;"
+        onmouseover="this.style.background='var(--accent)';this.style.borderColor='var(--accent)'"
+        onmouseout="this.style.background='rgba(0,0,0,0.55)';this.style.borderColor='rgba(255,255,255,0.5)'">
+        ✏️
+      </button>
+    </div>
+  `;
+
+  // 배경 클릭 시 닫기 (이미지/버튼 클릭은 제외)
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.remove();
+  });
+
   document.body.appendChild(overlay);
+
+  // 이미지에 마우스 올리면 펜 아이콘 보이기
+  const wrap = document.getElementById('cgImgWrap');
+  const editBtn = document.getElementById('cgEditBtn');
+  wrap.addEventListener('mouseenter', () => {
+    editBtn.style.opacity = '1';
+    editBtn.style.pointerEvents = 'auto';
+  });
+  wrap.addEventListener('mouseleave', () => {
+    editBtn.style.opacity = '0';
+    editBtn.style.pointerEvents = 'none';
+  });
+
+  // ESC 키 닫기
+  const escHandler = e => {
+    if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escHandler); }
+  };
+  document.addEventListener('keydown', escHandler);
+  overlay.addEventListener('remove', () => document.removeEventListener('keydown', escHandler));
+  // MutationObserver로 overlay 제거 감지
+  const obs = new MutationObserver(() => { if (!document.getElementById('cgFullOverlay')) { document.removeEventListener('keydown', escHandler); obs.disconnect(); } });
+  obs.observe(document.body, {childList: true});
+}
+
+// 임시저장 이미지 수정 시작
+async function cgStartEdit(id) {
+  const overlay = document.getElementById('cgFullOverlay');
+
+  // 현재 미리보기에 작업 중인 콜라주가 있는지 확인
+  const canvas = document.getElementById('collageCanvas');
+  const isWorking = canvas && canvas.style.display !== 'none' && fsPhotos.length > 0;
+
+  if (isWorking) {
+    // 확인 다이얼로그: 기존 작업 임시저장 여부
+    const confirmed = await cgConfirmDialog('지금 작업 중인 콜라주를 임시저장할까요?');
+    if (confirmed) {
+      cgAddItem(canvas.toDataURL('image/png'));
+    }
+  }
+
+  // 선택한 임시저장 이미지를 미리보기로 불러오기
+  const items = cgLoad();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  // dataUrl → Image 객체로 변환 후 fsPhotos에 로드
+  const img = new Image();
+  img.onload = () => {
+    fsPhotos = [{ src: item.dataUrl, img, type: 'image/jpeg' }];
+    fsThumbs();
+    // 미리보기 캔버스에 바로 표시
+    const c = document.getElementById('collageCanvas');
+    c.width = img.width; c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    c.style.display = 'block';
+    document.getElementById('cvPh').style.display = 'none';
+    document.getElementById('dlBtn').classList.add('show');
+    document.getElementById('useBtn').classList.add('show');
+    document.getElementById('editToolbar').classList.add('visible');
+    fsDataUrl = item.dataUrl;
+    setTimeout(renderMosaicOverlay, 50);
+    setTimeout(renderSlotOverlay, 60);
+    // FrameSnap 탭으로 이동 후 스크롤
+    const fsTab = document.querySelector('[onclick*="framesnap"]');
+    if (fsTab) fsTab.click();
+    setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'center'}), 150);
+  };
+  img.src = item.dataUrl;
+
+  if (overlay) overlay.remove();
+}
+
+// 간단한 확인 다이얼로그 (Promise 기반)
+function cgConfirmDialog(msg) {
+  return new Promise(resolve => {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;';
+    d.innerHTML = `
+      <div style="background:#fff;border-radius:14px;padding:24px 28px;max-width:300px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.25);font-family:'DM Sans',sans-serif;">
+        <p style="font-size:0.88rem;color:#1a1a1a;line-height:1.6;margin-bottom:18px;">${msg}</p>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button onclick="this.closest('[style]').dataset.res='no'" style="padding:7px 16px;border:1.5px solid #ddd;border-radius:8px;background:#f5f5f5;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">아니오</button>
+          <button onclick="this.closest('[style]').dataset.res='yes'" style="padding:7px 16px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">예, 저장할게요</button>
+        </div>
+      </div>`;
+    document.body.appendChild(d);
+    const obs = new MutationObserver(() => {
+      if (d.dataset.res) { const r = d.dataset.res; d.remove(); obs.disconnect(); resolve(r === 'yes'); }
+    });
+    obs.observe(d, {attributes: true});
+    // 버튼 클릭 이벤트 직접 처리
+    d.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const res = btn.textContent.includes('아니') ? 'no' : 'yes';
+        d.remove();
+        resolve(res === 'yes');
+      });
+    });
+  });
 }
 
 function fsGenerate(){
@@ -1234,7 +1547,8 @@ function fsGenerate(){
   const g=fsGapSel,pad=g>0?g:0;
   canvas.width=W;canvas.height=H;
   ctx.fillStyle=fsBgSel;ctx.fillRect(0,0,W,H);
-  fsSlots(W,H,g,pad).forEach((s,i)=>fsDraw(ctx,fsPhotos[i%fsPhotos.length].img,s.x,s.y,s.w,s.h));
+  _currentSlots = fsSlots(W,H,g,pad);
+  _currentSlots.forEach((s,i)=>fsDraw(ctx,fsPhotos[i%fsPhotos.length].img,s.x,s.y,s.w,s.h));
   fsDataUrl=canvas.toDataURL('image/jpeg',0.97);
   document.getElementById('cvPh').style.display='none';
   canvas.style.display='block';
@@ -1245,11 +1559,18 @@ function fsGenerate(){
   const wmTog = document.getElementById('wmToggle');
   if (wmTog) wmTog.checked = false;
   setTimeout(renderMosaicOverlay, 50);
-  // 갤러리 자동 저장
+  setTimeout(renderSlotOverlay, 60);
+}
+
+function fsGenerateAndSave() {
+  fsGenerate();
+  // 갤러리에 1회만 저장 (버튼 클릭 시에만)
   setTimeout(() => {
-    const pngUrl = document.getElementById('collageCanvas').toDataURL('image/png');
-    cgAddItem(pngUrl);
-  }, 100);
+    const canvas = document.getElementById('collageCanvas');
+    if (canvas && canvas.style.display !== 'none') {
+      cgAddItem(canvas.toDataURL('image/png'));
+    }
+  }, 120);
 }
 function fsDownload(){
   const canvas=document.getElementById('collageCanvas');
@@ -1763,8 +2084,6 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// 콜라주 새로 생성할 때 워터마크 상태 리셋
-const _origFsGenerate = fsGenerate;
 
 </script>
 </body>
