@@ -731,8 +731,12 @@
 function switchPage(page, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  btn.classList.add('active');
+  const pageEl = document.getElementById('page-' + page);
+  if (!pageEl) return;
+  pageEl.classList.add('active');
+  // btn이 없으면 탭에서 찾아서 활성화
+  const target = btn || document.querySelector(`[onclick*="${page}"]`);
+  if (target) target.classList.add('active');
 }
 
 // ── POSTSNAP ─────────────────────────────
@@ -1103,57 +1107,49 @@ function removePsImage(e) {
 }
 
 document.getElementById('fileInput').addEventListener('change', function(e) {
-  const files = Array.from(e.target.files);
+  psHandleDrop(e.target.files);
+  this.value = '';
+});
+
+// PostSnap 드래그: psImgGrid + 패널 1 전체 영역
+function psHandleDrop(files) {
   const remaining = 3 - psImages.length;
-  const toAdd = files.slice(0, remaining);
-  let loaded = 0;
+  const toAdd = Array.from(files)
+    .filter(f => f.type.startsWith('image/'))
+    .slice(0, remaining);
+  if (!toAdd.length) return;
   toAdd.forEach(file => {
     const reader = new FileReader();
     reader.onload = ev => {
       resizeImageForAPI(ev.target.result, 1024, 0.82, (data, type) => {
         psImages.push({ data, type });
-        loaded++;
-        if (loaded === toAdd.length) {
-          renderPsImgGrid();
-          saveState();
-        }
+        renderPsImgGrid();
+        saveState();
       });
     };
     reader.readAsDataURL(file);
   });
-  this.value = ''; // 같은 파일 재선택 가능하게
-});
+}
 
-// PostSnap 드래그: psImgGrid 영역에 드롭
-const psGrid = document.getElementById('psImgGrid');
-if (psGrid) {
-  psGrid.addEventListener('dragover', e => {
+// 패널 1 전체에 드래그 이벤트 붙이기 (자식 버블링 문제 해결)
+const psPanel1 = document.querySelector('#page-postsnap .ps-main .panel:first-child');
+if (psPanel1) {
+  psPanel1.addEventListener('dragover', e => {
     if (psImages.length >= 3) return;
     e.preventDefault();
-    psGrid.style.outline = '2px dashed var(--accent)';
-    psGrid.style.borderRadius = '10px';
+    psPanel1.style.outline = '2px dashed var(--accent)';
+    psPanel1.style.outlineOffset = '-3px';
+    psPanel1.style.borderRadius = '16px';
   });
-  psGrid.addEventListener('dragleave', () => {
-    psGrid.style.outline = '';
+  psPanel1.addEventListener('dragleave', e => {
+    // 자식으로 이동한 경우 무시 (실제로 패널 밖으로 나간 경우만)
+    if (psPanel1.contains(e.relatedTarget)) return;
+    psPanel1.style.outline = '';
   });
-  psGrid.addEventListener('drop', e => {
+  psPanel1.addEventListener('drop', e => {
     e.preventDefault();
-    psGrid.style.outline = '';
-    if (psImages.length >= 3) return;
-    const files = Array.from(e.dataTransfer.files)
-      .filter(f => f.type.startsWith('image/'))
-      .slice(0, 3 - psImages.length);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        resizeImageForAPI(ev.target.result, 1024, 0.82, (data, type) => {
-          psImages.push({ data, type });
-          renderPsImgGrid();
-          saveState();
-        });
-      };
-      reader.readAsDataURL(file);
-    });
+    psPanel1.style.outline = '';
+    psHandleDrop(e.dataTransfer.files);
   });
 }
 
@@ -1346,9 +1342,9 @@ function cvFullPreview() {
 
 // cv-body 전체 드래그 (캔버스 있어도 동작)
 function cvBodyDragOver(e) {
-  // 슬롯 드래그 중이면 무시
   if (window._fsSlotDragging) return;
   e.preventDefault();
+  e.stopPropagation();
   const ph = document.getElementById('cvPh');
   const canvas = document.getElementById('collageCanvas');
   if (canvas && canvas.style.display !== 'none') {
@@ -1361,6 +1357,9 @@ function cvBodyDragOver(e) {
 }
 function cvBodyDragLeave(e) {
   if (window._fsSlotDragging) return;
+  // 자식 요소로 이동하는 경우 무시
+  const cvBody = document.getElementById('cvBody');
+  if (cvBody && cvBody.contains(e.relatedTarget)) return;
   const canvas = document.getElementById('collageCanvas');
   if (canvas) canvas.style.outline = '';
   const ph = document.getElementById('cvPh');
