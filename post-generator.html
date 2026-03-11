@@ -343,7 +343,7 @@
     <div class="save-badge" id="saveBadge">✓ 자동저장됨</div>
     <div class="tab-nav">
       <button class="tab-nav-btn active" onclick="switchPage('postsnap',this)">✦ 글 생성</button>
-      <button class="tab-nav-btn" onclick="switchPage('framesnap',this)">🖼️ 콜라주</button>
+      <button class="tab-nav-btn" onclick="switchPage('framesnap',this)">✏️ 이미지 편집기</button>
     </div>
   </div>
 </header>
@@ -473,14 +473,14 @@
         <span style="font-size:0.68rem; color:var(--muted); font-weight:400; margin-left:4px;">글 안에 {콜라주} 위치가 표시돼요 — 클릭해서 바로 만들어보세요</span>
       </div>
       <div id="imagePlanContent" style="font-size:0.8rem; color:var(--ink); line-height:1.75; white-space:pre-wrap;"></div>
-      <button onclick="openCollagePlanModal()" style="margin-top:12px; padding:7px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer;">→ FrameSnap에서 콜라주 만들기</button>
+      <button onclick="openCollagePlanModal()" style="margin-top:12px; padding:7px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer;">→ 이미지 편집기에서 만들기</button>
     </div>
 
     <!-- 콜라주 추천 모달 -->
     <div id="collagePlanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:24px 28px;max-width:420px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);font-family:'DM Sans',sans-serif;">
-        <div style="font-size:0.92rem;font-weight:700;color:var(--ink);margin-bottom:6px;">📐 추천 콜라주 목록</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">만들고 싶은 콜라주를 선택하면 FrameSnap으로 이동해요</div>
+        <div style="font-size:0.92rem;font-weight:700;color:var(--ink);margin-bottom:6px;">📐 추천 편집 목록</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">만들고 싶은 편집본을 선택하면 이미지 편집기로 이동해요</div>
         <div id="collagePlanList" style="display:flex;flex-direction:column;gap:8px;"></div>
         <button onclick="document.getElementById('collagePlanModal').style.display='none'"
           style="margin-top:18px;width:100%;padding:9px;border:1.5px solid #ddd;border-radius:9px;background:none;font-size:0.8rem;color:var(--muted);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">닫기</button>
@@ -492,11 +492,11 @@
 <!-- FRAMESNAP -->
 <div class="page" id="page-framesnap">
   <div class="fs-main">
-    <!-- ① 임시저장된 콜라주 갤러리 (전체너비) -->
+    <!-- ① 임시저장된 편집본 갤러리 (전체너비) -->
     <div class="cg-section" id="cgSection">
         <div class="cg-header">
           <div style="display:flex;align-items:center;gap:8px;">
-            <span class="cg-title">임시저장된 콜라주</span>
+            <span class="cg-title">임시저장된 편집본</span>
             <span class="cg-select-bar" id="cgSelectBar"></span>
           </div>
           <div class="cg-controls">
@@ -523,7 +523,7 @@
           </div>
         </div>
         <div class="cg-grid" id="cgGrid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));"></div>
-        <div class="cg-empty" id="cgEmpty">임시저장된 콜라주가 없어요.<br>콜라주를 만들면 여기에 자동 저장돼요 🖼️</div>
+        <div class="cg-empty" id="cgEmpty">임시저장된 편집본이 없어요.<br>편집하면 여기에 자동 저장돼요 🖼️</div>
     </div>
 
     <!-- ② 작업 영역 (3컬럼) -->
@@ -613,8 +613,8 @@
         </div>
       </div>
 
-      <button class="use-btn show" id="saveColBtn" onclick="fsGenerateAndSave()">🖼️ 콜라주 임시저장하기</button>
-      <button class="fs-gen-btn" id="useBtn" onclick="useInPostSnap()" style="display:none;margin-top:10px;">📝 이 콜라주로 PostSnap에서 글 쓰기 →</button>
+      <button class="use-btn show" id="saveColBtn" onclick="fsGenerateAndSave()">💾 편집본 임시저장하기</button>
+      <button class="fs-gen-btn" id="useBtn" onclick="useInPostSnap()" style="display:none;margin-top:10px;">📝 이 이미지로 PostSnap에서 글 쓰기 →</button>
       </div><!-- /left col -->
 
     <div class="cv-wrap">
@@ -632,8 +632,11 @@
           <button class="dl-btn" id="dlBtn" onclick="fsDownload()">⬇ 내려받기</button>
         </div>
       </div>
-      <div class="cv-body">
-        <div class="cv-ph" id="cvPh" id="cvDropZone"
+      <div class="cv-body" id="cvBody"
+        ondragover="cvBodyDragOver(event)"
+        ondragleave="cvBodyDragLeave(event)"
+        ondrop="cvBodyDrop(event)">
+        <div class="cv-ph" id="cvPh"
           style="width:100%;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--cream);border-radius:12px;cursor:pointer;transition:all 0.2s;"
           onclick="document.getElementById('fsInput').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-light)'"
@@ -1036,10 +1039,38 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
   this.value = ''; // 같은 파일 재선택 가능하게
 });
 
-const uz = document.getElementById('uploadZone');
-uz.addEventListener('dragover', e => { e.preventDefault(); uz.style.borderColor='var(--accent)'; });
-uz.addEventListener('dragleave', () => { uz.style.borderColor=''; });
-uz.addEventListener('drop', e => { e.preventDefault(); const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')){document.getElementById('fileInput').files=e.dataTransfer.files;document.getElementById('fileInput').dispatchEvent(new Event('change'));} });
+// PostSnap 드래그: psImgGrid 영역에 드롭
+const psGrid = document.getElementById('psImgGrid');
+if (psGrid) {
+  psGrid.addEventListener('dragover', e => {
+    if (psImages.length >= 3) return;
+    e.preventDefault();
+    psGrid.style.outline = '2px dashed var(--accent)';
+    psGrid.style.borderRadius = '10px';
+  });
+  psGrid.addEventListener('dragleave', () => {
+    psGrid.style.outline = '';
+  });
+  psGrid.addEventListener('drop', e => {
+    e.preventDefault();
+    psGrid.style.outline = '';
+    if (psImages.length >= 3) return;
+    const files = Array.from(e.dataTransfer.files)
+      .filter(f => f.type.startsWith('image/'))
+      .slice(0, 3 - psImages.length);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        resizeImageForAPI(ev.target.result, 1024, 0.82, (data, type) => {
+          psImages.push({ data, type });
+          renderPsImgGrid();
+          saveState();
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+}
 
 document.getElementById('contextInput').addEventListener('input', function() {
   document.getElementById('charCount').textContent = this.value.length;
@@ -1245,6 +1276,37 @@ function cvFullPreview() {
   lbOpen([{ src }], 0, '미리보기', null, null, null, new Set());
 }
 
+
+// cv-body 전체 드래그 (캔버스 있어도 동작)
+function cvBodyDragOver(e) {
+  // 슬롯 드래그 중이면 무시
+  if (window._fsSlotDragging) return;
+  e.preventDefault();
+  const ph = document.getElementById('cvPh');
+  const canvas = document.getElementById('collageCanvas');
+  if (canvas && canvas.style.display !== 'none') {
+    // 캔버스 있을 때: 캔버스에 오버레이 표시
+    canvas.style.outline = '3px dashed var(--accent)';
+  } else if (ph) {
+    ph.style.borderColor = 'var(--accent)';
+    ph.style.background = 'var(--accent-light)';
+  }
+}
+function cvBodyDragLeave(e) {
+  if (window._fsSlotDragging) return;
+  const canvas = document.getElementById('collageCanvas');
+  if (canvas) canvas.style.outline = '';
+  const ph = document.getElementById('cvPh');
+  if (ph) { ph.style.borderColor = 'var(--cream)'; ph.style.background = ''; }
+}
+function cvBodyDrop(e) {
+  if (window._fsSlotDragging) return;
+  const canvas = document.getElementById('collageCanvas');
+  if (canvas) canvas.style.outline = '';
+  const ph = document.getElementById('cvPh');
+  if (ph) { ph.style.borderColor = 'var(--cream)'; ph.style.background = ''; }
+  cvPhDrop(e);
+}
 function cvPhDrop(e) {
   e.preventDefault();
   const ph = document.getElementById('cvPh');
@@ -1548,6 +1610,7 @@ function slotClick(e, idx) {
 }
 
 function slotDragStart(e, idx) {
+  window._fsSlotDragging = true;
   _slotDragIdx = idx;
   e.currentTarget.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
@@ -2092,7 +2155,7 @@ function cgPreviewLb(id) {
   const likes = cgLoadLikes();
   const heartedSet = new Set(lbItems.map((it,i) => likes.has(it.id) ? i : -1).filter(i=>i>=0));
   lbOpen(
-    images, idx >= 0 ? idx : 0, '임시저장된 콜라주',
+    images, idx >= 0 ? idx : 0, '임시저장된 편집본',
     (lbCurIdx) => { // 수정
       const curItem = lbItems[lbCurIdx];
       if (curItem) cgStartEdit(curItem.id);
@@ -2227,7 +2290,7 @@ function cgAddItem(dataUrl) {
           // 그래도 안되면 가장 오래된 5개 제거
           items.splice(-5);
           try { localStorage.setItem(CG_KEY, JSON.stringify(items)); cgHistPush(); } catch(e3) {
-            showToast('⚠️ 저장 공간이 부족해요. 오래된 콜라주를 삭제해주세요.', 4000);
+            showToast('⚠️ 저장 공간이 부족해요. 오래된 편집본을 삭제해주세요.', 4000);
             return;
           }
         }
@@ -2390,7 +2453,7 @@ function cgPreview(id) {
     <div style="position:relative;display:inline-flex;" id="cgImgWrap">
       <img src="${item.dataUrl}" style="max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);display:block;">
       <!-- 수정 펜 아이콘 (커서 올릴 때 보임) -->
-      <button id="cgEditBtn" title="이 콜라주 수정하기"
+      <button id="cgEditBtn" title="이 편집본 수정하기"
         onclick="cgStartEdit(${item.id})"
         style="position:absolute;bottom:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.55);border:2px solid rgba(255,255,255,0.5);color:#fff;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s,transform 0.15s;pointer-events:none;"
         onmouseover="this.style.background='var(--accent)';this.style.borderColor='var(--accent)'"
@@ -2529,7 +2592,7 @@ async function cgStartEdit(id) {
       setTimeout(() => c.scrollIntoView({behavior:'smooth', block:'center'}), 150);
     };
     img.src = item.dataUrl;
-    showToast('⚠️ 이 콜라주는 원본 사진 정보가 없어요. 모자이크/워터마크만 편집 가능해요.', 4000);
+    showToast('⚠️ 원본 사진 정보가 없어요. 모자이크/워터마크만 편집 가능해요.', 4000);
   }
 
   if (overlay) overlay.remove();
@@ -2624,7 +2687,7 @@ function fsGenerateAndSave() {
   }
   // 현재 캔버스 상태 그대로 저장 (워터마크/모자이크 포함)
   cgAddItem(canvas.toDataURL('image/png'));
-  showToast('✓ 콜라주가 임시저장됐어요!', 2000);
+  showToast('✓ 편집본이 임시저장됐어요!', 2000);
 }
 function fsDownload(){
   const canvas=document.getElementById('collageCanvas');
@@ -3083,7 +3146,7 @@ function startCollageFromPlan(idx) {
     if (nums.length > 0) {
       const msg = `${combo}\n\n원본 콜라주에서 위 사진 번호에 해당하는 사진들을 선택해서\n미리보기 영역에 드래그&드롭하세요!`;
       // 안내 토스트
-      showToast(`📐 ${combo} — 해당 사진들을 미리보기에 드래그해서 콜라주를 만들어보세요!`, 5000);
+      showToast(`📐 ${combo} — 해당 사진들을 미리보기에 드래그해서 이미지를 편집해보세요!`, 5000);
     }
   }, 300);
 }
