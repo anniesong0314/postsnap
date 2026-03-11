@@ -42,11 +42,29 @@
 
   /* ── POSTSNAP ── */
   .ps-main {
-    max-width: 960px; margin: 0 auto; padding: 40px 24px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 28px;
+    max-width: 1200px; margin: 0 auto; padding: 40px 24px;
+    display: grid;
+    grid-template-columns: 320px 1fr 260px;
+    grid-template-rows: auto auto;
+    gap: 20px;
+    align-items: start;
   }
-  @media (max-width: 700px) {
-    .ps-main { grid-template-columns: 1fr; padding: 20px 16px; }
+  .ps-main .panel:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .ps-main .panel:nth-child(2) { grid-column: 1; grid-row: 2; }
+  .output-panel { grid-column: 2; grid-row: 1 / 3; }
+  #refinePanel { grid-column: 3; grid-row: 1 / 3; }
+  @media (max-width: 900px) {
+    .ps-main { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .ps-main .panel:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .ps-main .panel:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .output-panel { grid-column: 2; grid-row: 1 / 3; }
+    #refinePanel { grid-column: 1 / -1; grid-row: 3; }
+  }
+  @media (max-width: 600px) {
+    .ps-main { grid-template-columns: 1fr; padding: 16px; gap: 14px; }
+    .ps-main .panel:nth-child(1),
+    .ps-main .panel:nth-child(2),
+    .output-panel, #refinePanel { grid-column: 1; grid-row: auto; }
     header { padding: 14px 16px; }
     .tab-nav-btn { padding: 6px 12px; font-size: 0.75rem; }
   }
@@ -71,19 +89,7 @@
   .ps-img-item .ps-img-del { position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,0.6); border:none; color:#fff; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .ps-img-add { width:100px; height:100px; border-radius:8px; border:2px dashed var(--cream); background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; color:var(--muted); font-size:0.72rem; gap:4px; transition:border-color 0.15s; }
   .ps-img-add:hover { border-color:var(--accent); color:var(--accent); }
-  .photo-memo-section { margin-top:16px; border:1.5px solid var(--cream); border-radius:10px; overflow:hidden; }
-  .photo-memo-header { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--white); cursor:pointer; user-select:none; }
-  .photo-memo-header:hover { background:var(--paper); }
-  .photo-memo-body { display:none; padding:12px 14px; border-top:1px solid var(--cream); background:var(--white); }
-  .photo-memo-body.open { display:block; }
-  .photo-count-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
-  .photo-count-input { width:70px; padding:5px 10px; border:1.5px solid var(--cream); border-radius:8px; font-size:0.85rem; font-family:'DM Sans',sans-serif; text-align:center; }
-  .photo-memo-list { display:flex; flex-direction:column; gap:6px; }
-  .photo-memo-row { display:flex; align-items:center; gap:8px; }
-  .photo-memo-num { font-size:0.72rem; font-weight:700; color:var(--muted); min-width:42px; }
-  .photo-memo-inp { flex:1; padding:6px 10px; border:1.5px solid var(--cream); border-radius:7px; font-size:0.78rem; font-family:'DM Sans',sans-serif; transition:border-color 0.15s; }
-  .photo-memo-inp:focus { outline:none; border-color:var(--accent); }
-  .photo-memo-inp.filled { border-color:var(--green); background:#f0faf4; }
+  /* photo-memo-section removed */
 
   .ctx-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
   textarea { width: 100%; border: 1.5px solid var(--cream); border-radius: 10px; padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: var(--ink); background: var(--paper); resize: none; line-height: 1.6; transition: border-color 0.2s; outline: none; }
@@ -99,7 +105,7 @@
   .generate-btn:hover { background: #a84d20; transform: translateY(-1px); }
   .generate-btn:disabled { background: var(--muted); cursor: not-allowed; transform: none; }
 
-  .output-panel { grid-column: 1 / -1; background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; }
+  .output-panel { background: var(--white); border: 1.5px solid var(--cream); border-radius: 16px; overflow: hidden; }
   .out-tab-bar { display: flex; border-bottom: 1.5px solid var(--cream); background: var(--paper); }
   .out-tab { padding: 13px 22px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2.5px solid transparent; transition: all 0.15s; }
   .out-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--white); }
@@ -333,6 +339,23 @@
   .lb-thumb { width:60px; height:60px; object-fit:cover; border-radius:5px; cursor:pointer; opacity:0.5; border:2px solid transparent; transition:all 0.15s; flex-shrink:0; }
   .lb-thumb.active { opacity:1; border-color:#fff; }
   .lb-thumb:hover { opacity:0.85; }
+
+  /* ── 수정 프롬프트 패널 ── */
+  .refine-panel { background:var(--white); border:1.5px solid var(--cream); border-radius:16px; overflow:hidden; }
+  .refine-header { padding:16px 20px 12px; border-bottom:1px solid var(--cream); }
+  .refine-title { font-size:0.78rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:var(--muted); }
+  .refine-group-label { font-size:0.7rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin:14px 0 7px; }
+  .refine-btns { display:flex; flex-wrap:wrap; gap:6px; }
+  .refine-btn { padding:6px 12px; border:1.5px solid var(--cream); border-radius:20px; background:var(--paper); font-family:'DM Sans',sans-serif; font-size:0.76rem; color:var(--muted); cursor:pointer; transition:all 0.15s; user-select:none; }
+  .refine-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .refine-btn.selected { border-color:var(--accent); background:var(--accent-light); color:var(--accent); font-weight:600; }
+  .refine-apply { width:calc(100% - 40px); margin:14px 20px 16px; padding:11px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.15s; display:none; }
+  .refine-apply:hover { background:#a84d20; }
+  .refine-apply.visible { display:block; }
+  .refine-apply:disabled { background:var(--muted); cursor:not-allowed; }
+  /* 하이라이트 */
+  .highlight-new { background:#fff176; border-radius:3px; padding:1px 0; transition:background 1.5s; }
+  .highlight-new.fade { background:transparent; }
 </style>
 </head>
 <body>
@@ -352,45 +375,24 @@
 <div class="page active" id="page-postsnap">
   <div class="ps-main">
     <div class="panel">
-      <div class="panel-header"><div class="step-badge">1</div><div class="panel-title">사진 / 메모 업로드</div></div>
+      <div class="panel-header"><div class="step-badge">1</div><div class="panel-title">지금 이 순간을 기록해요</div></div>
       <div class="panel-body">
-        <!-- 대표 사진 (최대 3장) -->
-        <span class="ctx-label">대표 사진 <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">최대 3장 · AI가 분위기 파악용으로 사용</span></span>
-        <div class="ps-img-grid" id="psImgGrid">
-          <div class="ps-img-add" id="psImgAdd" onclick="document.getElementById('fileInput').click()">
-            <span style="font-size:1.3rem;">📷</span>
-            <span>사진 추가</span>
-          </div>
-        </div>
-        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+        <!-- 메모: 메인 입력 -->
+        <textarea id="contextInput" rows="10"
+          placeholder="느낀 점, 기억하고 싶은 것들을 편하게 적어주세요.&#10;&#10;예) AW2026 다녀왔어. 생각보다 AI 로봇 존이 제일 인상깊었고, ○○ 부스에서 시연한 게 신기했음. 사람이 엄청 많았는데 그래도 주요 부스는 다 돌았고 특히 통합 솔루션 쪽이 올해 트렌드인 것 같았어."
+          style="min-height:200px;resize:vertical;"></textarea>
+        <div class="char-count"><span id="charCount">0</span> / 1000자</div>
 
-        <!-- 메모 -->
+        <!-- 사진 (선택) -->
         <div style="margin-top:16px;">
-          <span class="ctx-label">메모 <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">(선택 · 상황/맥락 설명)</span></span>
-          <textarea id="contextInput" rows="3" placeholder="예: AW2026 전시회 다녀온 후기. 44개 부스 방문, AI/로보틱스/핀테크 위주였고 통합 솔루션이 인상적이었다."></textarea>
-          <div class="char-count"><span id="charCount">0</span> / 1000자</div>
-        </div>
-
-        <!-- 총 사진 수 + 번호별 메모 -->
-        <div class="photo-memo-section" id="photoMemoSection">
-          <div class="photo-memo-header" onclick="togglePhotoMemo()">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:0.82rem;font-weight:600;color:var(--ink);">📸 사진 배치 추천 받기</span>
-              <span style="font-size:0.7rem;color:var(--muted);">(선택 · 전체 사진 번호별 설명 입력)</span>
-            </div>
-            <span id="photoMemoArrow" style="color:var(--muted);font-size:0.8rem;">▾</span>
-          </div>
-          <div class="photo-memo-body" id="photoMemoBody">
-            <div class="photo-count-row">
-              <span style="font-size:0.8rem;font-weight:600;color:var(--ink);">총 사진 수</span>
-              <input type="number" id="photoTotalCount" class="photo-count-input" min="1" max="100" placeholder="예: 20" oninput="renderPhotoMemoList()">
-              <span style="font-size:0.75rem;color:var(--muted);">장</span>
-            </div>
-            <div id="photoMemoList" class="photo-memo-list"></div>
-            <div id="photoMemoHint" style="font-size:0.72rem;color:var(--muted);margin-top:8px;display:none;">
-              ✅ 전체 입력 완료 — 글 생성 시 배치표가 함께 나와요
+          <span class="ctx-label">사진 <span style="font-size:0.7rem;color:var(--muted);font-weight:400;">선택 · 최대 3장 · 분위기 파악용</span></span>
+          <div class="ps-img-grid" id="psImgGrid">
+            <div class="ps-img-add" id="psImgAdd" onclick="document.getElementById('fileInput').click()">
+              <span style="font-size:1.3rem;">📷</span>
+              <span>사진 추가</span>
             </div>
           </div>
+          <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
         </div>
       </div>
     </div>
@@ -456,8 +458,36 @@
         <div class="out-tab-content" id="tab-x"></div>
       </div>
     </div>
-  
-  <!-- 사진 배치표 -->
+
+    <!-- 수정 프롬프트 패널 (ps-main 그리드 3열) -->
+    <div class="refine-panel" id="refinePanel" style="display:none;">
+      <div class="refine-header">
+        <div class="refine-title">✦ 글 다듬기</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:3px;">원하는 방향을 선택하고 적용해요</div>
+      </div>
+      <div style="padding:0 20px;">
+        <div class="refine-group-label">글 스타일</div>
+        <div class="refine-btns">
+          <button class="refine-btn" data-refine="emotional" onclick="toggleRefine(this)">✏️ 더 감성적으로</button>
+          <button class="refine-btn" data-refine="shorter" onclick="toggleRefine(this)">📏 더 짧게</button>
+          <button class="refine-btn" data-refine="longer" onclick="toggleRefine(this)">📖 더 길게</button>
+          <button class="refine-btn" data-refine="friendly" onclick="toggleRefine(this)">💬 더 친근하게</button>
+          <button class="refine-btn" data-refine="professional" onclick="toggleRefine(this)">🎯 더 전문적으로</button>
+          <button class="refine-btn" data-refine="intro" onclick="toggleRefine(this)">🔥 도입부 강하게</button>
+        </div>
+        <div class="refine-group-label">해시태그</div>
+        <div class="refine-btns">
+          <button class="refine-btn" data-refine="hashtag_add" onclick="toggleRefine(this)">🏷️ 해시태그 추가</button>
+          <button class="refine-btn" data-refine="hashtag_replace" onclick="toggleRefine(this)">🔄 해시태그 교체</button>
+        </div>
+      </div>
+      <button class="refine-apply" id="refineApplyBtn" onclick="applyRefine()">✦ 선택한 방향으로 다시 쓰기</button>
+    </div>
+
+  </div><!-- /ps-main -->
+</div><!-- /page-postsnap -->
+
+  <!-- 사진 배치표 (레거시 유지) -->
   <div id="photoPlanCard" style="display:none;margin:0 20px 16px;border:1.5px solid var(--green-light);border-radius:12px;background:#f6fef9;overflow:hidden;">
     <div style="padding:10px 16px;background:var(--green-light);display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:0.82rem;font-weight:700;color:var(--green);">📸 사진 배치 추천표</span>
@@ -486,8 +516,6 @@
           style="margin-top:18px;width:100%;padding:9px;border:1.5px solid #ddd;border-radius:9px;background:none;font-size:0.8rem;color:var(--muted);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">닫기</button>
       </div>
     </div>
-  </div>
-</div>
 
 <!-- FRAMESNAP -->
 <div class="page" id="page-framesnap">
@@ -884,6 +912,118 @@ function delDraft(e, i) {
   } catch(e) {}
 }
 
+
+// ── 수정 프롬프트 패널 ──────────────────────────────
+const refinePrompts = {
+  emotional:    '글의 감정 표현을 더 풍부하고 감성적으로 바꿔주세요. 독자가 현장에 있는 것처럼 느낄 수 있게.',
+  shorter:      '핵심 내용은 유지하면서 글을 더 간결하게 줄여주세요.',
+  longer:       '더 풍부하게 살을 붙여 최소 500자 이상으로 늘려주세요. 세부 묘사와 감상을 추가해주세요.',
+  friendly:     '말투를 더 친근하고 편안하게 바꿔주세요. 독자에게 말하는 듯한 느낌으로.',
+  professional: '전문적이고 신뢰감 있는 톤으로 바꿔주세요.',
+  intro:        '도입부를 더 강렬하고 흡입력 있게 다시 써주세요. 독자가 계속 읽고 싶게.',
+  hashtag_add:  '글 내용에 맞는 해시태그를 글 마지막에 추가해주세요.',
+  hashtag_replace: '기존 해시태그를 제거하고 글 내용에 더 잘 맞는 새 해시태그로 교체해주세요.',
+};
+
+function toggleRefine(btn) {
+  btn.classList.toggle('selected');
+  const anySelected = document.querySelectorAll('.refine-btn.selected').length > 0;
+  const applyBtn = document.getElementById('refineApplyBtn');
+  applyBtn.classList.toggle('visible', anySelected);
+}
+
+async function applyRefine() {
+  const selected = [...document.querySelectorAll('.refine-btn.selected')];
+  if (selected.length === 0) return;
+
+  const platform = psSelectedPlatforms[0];
+  const currentText = psOutput[platform];
+  if (!currentText) return;
+
+  const instructions = selected.map(b => refinePrompts[b.dataset.refine]).join('
+');
+  const applyBtn = document.getElementById('refineApplyBtn');
+  applyBtn.disabled = true;
+  applyBtn.textContent = '✍️ 다시 쓰는 중...';
+
+  try {
+    const prompt = `아래 글을 다음 지침에 따라 수정해주세요.
+
+지침:
+${instructions}
+
+원본 글:
+${currentText}
+
+수정된 글만 출력해주세요. 설명이나 전후 멘트 없이.`;
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const newText = (data.content||[]).map(c=>c.text||'').join('').trim();
+    if (!newText) throw new Error('empty');
+
+    // 이전 글 저장 (되돌리기용)
+    window._refinePrev = window._refinePrev || {};
+    window._refinePrev[platform] = currentText;
+
+    psOutput[platform] = newText;
+    showOutputWithHighlight(platform, currentText, newText);
+    saveState();
+
+    // 버튼 선택 초기화
+    document.querySelectorAll('.refine-btn.selected').forEach(b => b.classList.remove('selected'));
+    applyBtn.classList.remove('visible');
+
+  } catch(e) {
+    alert('수정 중 오류가 발생했어요. 다시 시도해주세요.');
+  } finally {
+    applyBtn.disabled = false;
+    applyBtn.textContent = '✦ 선택한 방향으로 다시 쓰기';
+  }
+}
+
+// ── 하이라이트: 바뀐 문장 노란 형광펜 ─────────────────
+function showOutputWithHighlight(platform, oldText, newText) {
+  const el = document.getElementById('tab-' + platform);
+  if (!el) return;
+
+  // 문장 단위 diff
+  const oldSents = splitSentences(oldText);
+  const newSents = splitSentences(newText);
+  const oldSet = new Set(oldSents);
+
+  const highlighted = newSents.map(s => {
+    const trimmed = s.trim();
+    if (!trimmed) return s;
+    // 새로 추가되거나 바뀐 문장이면 하이라이트
+    return oldSet.has(s) ? s : `<mark class="highlight-new">${escapeHtml(s)}</mark>`;
+  }).join('');
+
+  el.innerHTML = `<div class="generated-text" id="text-${platform}">${highlighted}</div>
+    <button class="copy-btn" onclick="copyText('text-${platform}')">📋 복사하기</button>`;
+
+  // 2.5초 후 형광펜 서서히 사라짐
+  setTimeout(() => {
+    document.querySelectorAll('.highlight-new').forEach(m => m.classList.add('fade'));
+  }, 2500);
+}
+
+function splitSentences(text) {
+  // 줄바꿈 + 마침표/느낌표/물음표 기준으로 분리
+  return text.split(/(?<=[.!?。\n])/).filter(s => s.length > 0);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function showOutput() {
   const platforms = psSelectedPlatforms;
   document.getElementById('outTabBar').style.display = platforms.length>1 ? 'flex' : 'none';
@@ -895,6 +1035,9 @@ function showOutput() {
   });
   switchOutTab(platforms[0]);
   document.getElementById('outputArea').style.display = 'block';
+  // 수정 패널 표시
+  const rp = document.getElementById('refinePanel');
+  if (rp) rp.style.display = 'block';
 }
 
 
@@ -949,67 +1092,9 @@ function psPreviewImg(idx) {
 }
 
 // ── 번호별 메모 ─────────────────────────────────────
-function togglePhotoMemo() {
-  const body = document.getElementById('photoMemoBody');
-  const arrow = document.getElementById('photoMemoArrow');
-  const open = body.classList.toggle('open');
-  arrow.textContent = open ? '▴' : '▾';
-}
+// togglePhotoMemo removed
 
-function renderPhotoMemoList() {
-  const n = parseInt(document.getElementById('photoTotalCount').value) || 0;
-  const list = document.getElementById('photoMemoList');
-  const hint = document.getElementById('photoMemoHint');
-  if (!list) return;
-  if (n < 1 || n > 100) { list.innerHTML = ''; hint.style.display='none'; return; }
-
-  // 기존 값 보존
-  const existing = {};
-  list.querySelectorAll('.photo-memo-inp').forEach(inp => {
-    existing[inp.dataset.num] = inp.value;
-  });
-
-  list.innerHTML = Array.from({length: n}, (_, i) => {
-    const num = i + 1;
-    const val = existing[num] || '';
-    return `<div class="photo-memo-row">
-      <span class="photo-memo-num">사진 ${num}</span>
-      <input class="photo-memo-inp${val ? ' filled' : ''}" data-num="${num}"
-        placeholder="예: 전시장 입구" value="${val}"
-        oninput="onPhotoMemoInput(this)">
-    </div>`;
-  }).join('');
-  checkPhotoMemoComplete();
-}
-
-function onPhotoMemoInput(inp) {
-  inp.classList.toggle('filled', inp.value.trim() !== '');
-  checkPhotoMemoComplete();
-  saveState();
-}
-
-function checkPhotoMemoComplete() {
-  const n = parseInt(document.getElementById('photoTotalCount')?.value) || 0;
-  const hint = document.getElementById('photoMemoHint');
-  if (!hint || n < 1) { if(hint) hint.style.display='none'; return; }
-  const inputs = document.querySelectorAll('.photo-memo-inp');
-  const allFilled = inputs.length === n && [...inputs].every(inp => inp.value.trim() !== '');
-  hint.style.display = allFilled ? 'block' : 'none';
-}
-
-function getPhotoMemos() {
-  const n = parseInt(document.getElementById('photoTotalCount')?.value) || 0;
-  if (n < 1) return null;
-  const inputs = document.querySelectorAll('.photo-memo-inp');
-  if (inputs.length !== n) return null;
-  const memos = {};
-  let allFilled = true;
-  inputs.forEach(inp => {
-    if (!inp.value.trim()) allFilled = false;
-    memos[inp.dataset.num] = inp.value.trim();
-  });
-  return allFilled ? { total: n, memos } : null;
-}
+// photo-memo functions removed
 
 // UPLOAD
 function removePsImage(e) {
@@ -1129,23 +1214,7 @@ async function generatePost() {
   let prompt=`당신은 SNS 포스트 작성 전문가입니다. ${toneMap[psTone]||'자연스럽게'} 글을 써주세요.\n\n`;
   if(ctx) prompt+=`상황/메모: ${ctx}\n\n`;
   if(psImages.length > 0) prompt+=`(대표 사진 ${psImages.length}장이 첨부되어 있습니다. 사진의 분위기와 내용을 글에 반영해주세요.)\n\n`;
-  // 사진 배치 메모가 있으면 프롬프트에 추가
-  const photoMemoData = getPhotoMemos();
-  if (photoMemoData) {
-    prompt += `\n\n[사진 배치 추천 요청]\n총 ${photoMemoData.total}장의 사진이 있습니다.\n각 사진 설명:\n`;
-    Object.entries(photoMemoData.memos).forEach(([num, desc]) => {
-      prompt += `사진 ${num}: ${desc}\n`;
-    });
-    prompt += `\n위 사진들을 글의 각 문단 뒤에 배치하는 추천표를 글 아래에 작성해주세요.
-형식:
-[PHOTO_PLAN]
-문단 1 (도입) 뒤 → 사진 N번 (설명)
-문단 2 뒤 → 사진 N번, N번 (설명, 설명)
-...
-[/PHOTO_PLAN]
-
-규칙: 모든 ${photoMemoData.total}장을 빠짐없이 배치. 한 위치에 1~3장씩. 글 흐름에 맞게 자연스럽게.`;
-  }
+  // photo memo feature removed
   prompt+=`다음 플랫폼에 맞는 포스트를 작성해주세요:\n`;
   platforms.forEach(p=>{
     if(p==='blog') prompt+=`\n[BLOG]\n네이버 블로그 포스트 (300~500자). 중요: 마크다운 문법(#, ##, **, *, - 등) 절대 사용 금지. 제목은 첫 줄에 일반 텍스트로, 소제목은 줄바꿈과 공백으로 구분. 복붙했을 때 바로 쓸 수 있는 깔끔한 텍스트로만 작성.\n`;
@@ -1181,10 +1250,8 @@ async function generatePost() {
     if (!rawText.trim()) {
       throw new Error('AI 응답이 비어있어요. 잠시 후 다시 시도해주세요.');
     }
-    // PHOTO_PLAN 추출 후 제거
-    const ppm = rawText.match(/\[PHOTO_PLAN\]([\s\S]*?)\[\/PHOTO_PLAN\]/);
-    const photoPlanText = ppm ? ppm[1].trim() : '';
-    const text = rawText.replace(/\[PHOTO_PLAN\][\s\S]*?\[\/PHOTO_PLAN\]/g, '').trim();
+    const photoPlanText = ''; // photo plan removed
+    const text = rawText.trim();
     // 플랫폼 섹션 파싱 (IMAGE_PLAN 제거된 텍스트에서)
     const bm=text.match(/\[BLOG\]([\s\S]*?)(?=\[LINKEDIN\]|\[YOUTUBE\]|\[INSTAGRAM\]|\[X\]|$)/);
     const lm=text.match(/\[LINKEDIN\]([\s\S]*?)(?=\[BLOG\]|\[YOUTUBE\]|\[INSTAGRAM\]|\[X\]|$)/);
@@ -1215,7 +1282,7 @@ async function generatePost() {
       if (photoPlanText) showPhotoPlan(photoPlanText);
       saveState();
       // 이미지 배치 추천은 별도로 비동기 호출 (글 표시 막지 않음)
-      // generateImagePlan은 PHOTO_PLAN이 없을 때만 실행
+      // generateImagePlan 호출 제거됨
     },400);
   } catch(err) {
     clearInterval(iv);
@@ -2700,7 +2767,7 @@ function fsDownload(){
 function useInPostSnap(){
   if(!fsDataUrl)return;
   // fsDataUrl을 항상 JPEG로 변환 후 PostSnap으로 전송
-  window._psImagePhotoCnt = fsPhotos.length || null;
+  window._psPhotoCnt = fsPhotos.length || null;
   resizeImageForAPI('data:image/png;base64,' + (fsDataUrl.includes(',') ? fsDataUrl.split(',')[1] : fsDataUrl), 1024, 0.82, (data, type) => {
     psImages = [{ data, type: 'image/jpeg' }];
     renderPsImgGrid();
@@ -3028,8 +3095,8 @@ async function generateImagePlan(imgData, imgType, generatedOutput, mainPlatform
   planContent.innerHTML = '<span style="color:var(--muted);font-size:0.78rem;">🖼️ 이미지 배치 분석 중...</span>';
 
   const genText = Object.values(generatedOutput).find(v => v) || '';
-  // psImagePhotoCnt: 원본 패널에 올라간 사진 수 (없으면 추정)
-  const photoCnt = window._psImagePhotoCnt || '여러';
+  // psPhotoCnt: 원본 패널에 올라간 사진 수
+  const photoCnt = window._psPhotoCnt || '여러';
   const prompt = `이 이미지는 총 ${photoCnt}장의 사진이 콜라주된 이미지입니다.
 사진 번호 규칙: 왼쪽 위부터 가로 방향으로 1, 2, 3... 순서. 두 번째 줄 첫 번째 = 한 줄 개수+1번.
 모든 사진 번호는 1부터 ${photoCnt}까지 존재합니다.
@@ -3097,7 +3164,7 @@ function copyPhotoPlan() {
 function showImagePlan() {
   const card = document.getElementById('imagePlanCard');
   const planContent = document.getElementById('imagePlanContent');
-  if (psImagePlan && psImage) {
+  if (psImagePlan && psImages.length > 0) {
     // {사진N과 사진M의 콜라주} 또는 {사진N 단독} → 클릭 가능한 배지로 변환
     const html = psImagePlan
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
