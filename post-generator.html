@@ -486,37 +486,6 @@
   </div><!-- /ps-main -->
 </div><!-- /page-postsnap -->
 
-  <!-- 사진 배치표 (레거시 유지) -->
-  <div id="photoPlanCard" style="display:none;margin:0 20px 16px;border:1.5px solid var(--green-light);border-radius:12px;background:#f6fef9;overflow:hidden;">
-    <div style="padding:10px 16px;background:var(--green-light);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:0.82rem;font-weight:700;color:var(--green);">📸 사진 배치 추천표</span>
-      <button onclick="copyPhotoPlan()" style="font-size:0.72rem;padding:3px 10px;border:1px solid var(--green);border-radius:8px;background:transparent;color:var(--green);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">📋 복사</button>
-    </div>
-    <div id="photoPlanContent" style="padding:12px 16px;font-size:0.8rem;line-height:1.9;color:var(--ink);white-space:pre-line;font-family:'DM Sans',sans-serif;"></div>
-  </div>
-
-  <!-- 이미지 배치 추천 카드 -->
-    <div id="imagePlanCard" style="display:none; margin-top:14px; background:var(--accent-light); border:1.5px solid var(--accent); border-radius:12px; padding:16px 18px;">
-      <div style="font-size:0.78rem; font-weight:700; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-        🖼️ 이미지 배치 추천
-        <span style="font-size:0.68rem; color:var(--muted); font-weight:400; margin-left:4px;">글 안에 {콜라주} 위치가 표시돼요 — 클릭해서 바로 만들어보세요</span>
-      </div>
-      <div id="imagePlanContent" style="font-size:0.8rem; color:var(--ink); line-height:1.75; white-space:pre-wrap;"></div>
-      <button onclick="openCollagePlanModal()" style="margin-top:12px; padding:7px 16px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:0.78rem; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer;">→ 이미지 편집기에서 만들기</button>
-    </div>
-
-    <!-- 콜라주 추천 모달 -->
-    <div id="collagePlanModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:center;justify-content:center;">
-      <div style="background:#fff;border-radius:16px;padding:24px 28px;max-width:420px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);font-family:'DM Sans',sans-serif;">
-        <div style="font-size:0.92rem;font-weight:700;color:var(--ink);margin-bottom:6px;">📐 추천 편집 목록</div>
-        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">만들고 싶은 편집본을 선택하면 이미지 편집기로 이동해요</div>
-        <div id="collagePlanList" style="display:flex;flex-direction:column;gap:8px;"></div>
-        <button onclick="document.getElementById('collagePlanModal').style.display='none'"
-          style="margin-top:18px;width:100%;padding:9px;border:1.5px solid #ddd;border-radius:9px;background:none;font-size:0.8rem;color:var(--muted);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">닫기</button>
-      </div>
-    </div>
-
-<!-- FRAMESNAP -->
 <div class="page" id="page-framesnap">
   <div class="fs-main">
     <!-- ① 임시저장된 편집본 갤러리 (전체너비) -->
@@ -3140,63 +3109,9 @@ ${genText.slice(0, 800)}`;
 }
 
 
-function showPhotoPlan(text) {
-  const card = document.getElementById('photoPlanCard');
-  const cont = document.getElementById('photoPlanContent');
-  if (!card || !cont) return;
-  cont.textContent = text;
-  card.style.display = 'block';
-  card.scrollIntoView({ behavior:'smooth', block:'nearest' });
-}
-
-function copyPhotoPlan() {
-  const cont = document.getElementById('photoPlanContent');
-  if (!cont) return;
-  navigator.clipboard.writeText(cont.textContent).then(() => {
-    const btn = event.target;
-    btn.textContent = '✓ 복사됨!';
-    setTimeout(() => btn.textContent = '📋 복사', 2000);
-  });
-}
-
-function showImagePlan() {
-  const card = document.getElementById('imagePlanCard');
-  const planContent = document.getElementById('imagePlanContent');
-  if (psImagePlan && psImages.length > 0) {
-    // {사진N과 사진M의 콜라주} 또는 {사진N 단독} → 클릭 가능한 배지로 변환
-    const html = psImagePlan
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\{([^}]+)\}/g, (_, inner) => {
-        return `<span class="img-plan-badge" onclick="openCollagePlanModal()" title="클릭해서 콜라주 만들기">{${inner}}</span>`;
-      });
-    planContent.innerHTML = html;
-    card.style.display = 'block';
-  } else {
-    card.style.display = 'none';
-  }
-}
-
-// {사진N...} 태그 파싱 → 추천 목록 추출
 function parseCombos() {
   const matches = [...(psImagePlan||'').matchAll(/\{([^}]+)\}/g)];
   return matches.map(m => m[1].trim()).filter(Boolean);
-}
-
-function openCollagePlanModal() {
-  const combos = parseCombos();
-  if (!combos.length) {
-    switchPage('framesnap', document.querySelector('[onclick*=framesnap]'));
-    return;
-  }
-  const list = document.getElementById('collagePlanList');
-  list.innerHTML = combos.map((c, i) => `
-    <button onclick="startCollageFromPlan(${i})"
-      style="text-align:left;padding:10px 14px;border:1.5px solid var(--cream);border-radius:9px;background:var(--paper);font-size:0.8rem;color:var(--ink);font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;"
-      onmouseover="this.style.background='var(--accent-light)';this.style.borderColor='var(--accent)'"
-      onmouseout="this.style.background='var(--paper)';this.style.borderColor='var(--cream)'">
-      📐 ${c}
-    </button>`).join('');
-  document.getElementById('collagePlanModal').style.display = 'flex';
 }
 
 function startCollageFromPlan(idx) {
